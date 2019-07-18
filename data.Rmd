@@ -6,7 +6,7 @@ output:
     toc_float: true
 ---
 <br>
-[[DOWNLOAD Data]{style="float:right"}](./link_file/resume.pdf) 
+[[Data Variables' Description ]{style="float:right"}](./variable_name.pdf) 
 
 ***
 
