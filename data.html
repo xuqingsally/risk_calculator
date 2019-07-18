@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Data used for modeling</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="model.html">Model</a>
+</li>
+<li>
+  <a href="mailto:&lt;qx2178@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/xuqingsally">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Data used for modeling</h1>
+
+</div>
+
+
+<p><br> <a href="./variable_name.pdf"><span style="float:right">Data Variables’ Description</span></a></p>
+<hr />
+<div id="descriptive-information" class="section level2">
+<h2>Descriptive Information</h2>
+<div id="original-data-set" class="section level3">
+<h3>Original Data Set</h3>
+<ul>
+<li>Data set has 215 observations with 48 variables</li>
+<li>Of the 48 variables, 5 are sums of subscores
+<ul>
+<li>12 binary, 14 level categorical, 7 continuous, 28 cont/discrete</li>
+</ul></li>
+<li>Full data missingess: <img src="data_files/figure-html/desc2-1.png" width="816" style="display: block; margin: auto;" /></li>
+<li>In the original data set, only 113 with complete data on all 48 variables.</li>
+<li>Of the 215, 4 are missing conversion status - these subjects are dropped from subsequent analysis.</li>
+<li>Of the 211 remaining, 12 are missing most/all SIPS variables (N, P, D, G vars - will drop these subjects from subsequent analyses).</li>
+<li>Have removed 16/215 = 7.4% of the data.</li>
+</ul>
+</div>
+<div id="analysis-data-set" class="section level3">
+<h3>Analysis Data Set</h3>
+<ul>
+<li>For the set of 199 subjects to be analyzed, missingness looks like: <img src="data_files/figure-html/desc4-1.png" width="816" style="display: block; margin: auto;" /></li>
+</ul>
+<div id="missingness-per-subject" class="section level4">
+<h4>Missingness per subject:</h4>
+<ul>
+<li>Number of variables missing and proportion of sample with that many missing:</li>
+</ul>
+<pre><code>## 
+##     0     1     2     3     4     5     7     9    10    12    13    15 
+## 0.568 0.141 0.111 0.060 0.005 0.035 0.020 0.020 0.015 0.005 0.015 0.005</code></pre>
+<pre><code>## [1] 0.03213987</code></pre>
+<ul>
+<li>Cummulative proportion missing x or less</li>
+</ul>
+<pre><code>##     0     1     2     3     4     5     7     9    10    12    13    15 
+## 0.568 0.709 0.820 0.880 0.885 0.920 0.940 0.960 0.975 0.980 0.995 1.000</code></pre>
+</div>
+<div id="missingness-per-variable" class="section level4">
+<h4>Missingness per variable:</h4>
+<pre><code>##                                         count  prop
+## ID                                          0 0.000
+## Idea_Sev_Base                               6 0.030
+## Behav_Sev_Base                              6 0.030
+## SI_Base                                     6 0.030
+## SB_Base                                     6 0.030
+## Trauma_NonSexual                            6 0.030
+## Trauma_Sexual                               6 0.030
+## race..AA.is.0..C.is.1..As.2..mixed.is.3     6 0.030
+## race_bin..c.is.0..non.c.is.1                6 0.030
+## schizotypal..scz.is.1..non.is.0             6 0.030
+## X1..no.is.0..yes.is.1                      15 0.075
+## famhx1..0.no..1.yes                        34 0.171
+## Age                                         1 0.005
+## Female                                      3 0.015
+## Conversion                                  0 0.000
+## P4a                                        15 0.075
+## P4v                                        15 0.075
+## P1                                          0 0.000
+## P2                                          0 0.000
+## P3                                          0 0.000
+## P4                                          0 0.000
+## P5                                          0 0.000
+## Ptot                                        0 0.000
+## N1                                          0 0.000
+## N2                                          0 0.000
+## N3                                          0 0.000
+## N4                                          0 0.000
+## N5                                          0 0.000
+## N6                                          0 0.000
+## N.Total                                     0 0.000
+## D1                                          0 0.000
+## D2                                          0 0.000
+## D3                                          0 0.000
+## D4                                          0 0.000
+## D.Total                                     0 0.000
+## G1                                          2 0.010
+## G2                                          0 0.000
+## G3                                          0 0.000
+## G4                                          0 0.000
+## G.Total                                     2 0.010
+## SIPS.Total                                  0 0.000
+## GAF                                         2 0.010
+## GFS..Social                                41 0.206
+## GFS..Role                                  41 0.206
+## P1PD                                       16 0.080
+## P1FR                                       16 0.080
+## P1OB                                       16 0.080
+## P1SNG                                      16 0.080
+## P1NP                                       18 0.090</code></pre>
+<p><br></p>
+</div>
+</div>
+</div>
+<div id="compsrisons-between-convertersnon-converters" class="section level2">
+<h2>Compsrisons between converters/non-converters</h2>
+<ul>
+<li>Numbers of converters and non-converters:</li>
+</ul>
+<pre><code>## 
+##   0   1 
+## 135  64</code></pre>
+<ul>
+<li>Mean (sd) reported for each continous variable and n (%) for each categorical variable. t-tests used to compare converters and non-converters on continuous measures and Fisher’s exact test used for categorical measures.</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Variables</th>
+<th align="left">Variable Names</th>
+<th align="left">N</th>
+<th align="left">Range</th>
+<th align="left">Full</th>
+<th align="left">Non-Converter</th>
+<th align="left">Converter</th>
+<th align="left">Stat</th>
+<th align="left">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">(n = 199)</td>
+<td align="left">(n = 135)</td>
+<td align="left">(n = 64)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="left">Idea_Sev_Base</td>
+<td align="left">198</td>
+<td align="left">Baseline Violent Ideation 0 is no 1 is yes</td>
+<td align="left">20.08 (3.82)</td>
+<td align="left">20.11 (3.86)</td>
+<td align="left">20.02 (3.76)</td>
+<td align="left">-0.16</td>
+<td align="left">0.871</td>
+</tr>
+<tr class="odd">
+<td align="left">P4a</td>
+<td align="left">Behav_Sev_Base</td>
+<td align="left">184</td>
+<td align="left">Baseline Violent Behavior 0 is no 1 is yes</td>
+<td align="left">2.48 (1.59)</td>
+<td align="left">2.54 (1.58)</td>
+<td align="left">2.36 (1.61)</td>
+<td align="left">-0.71</td>
+<td align="left">0.482</td>
+</tr>
+<tr class="even">
+<td align="left">P4v</td>
+<td align="left">SI_Base</td>
+<td align="left">184</td>
+<td align="left">baseline suicidal ideation 0 is no 1 is yes</td>
+<td align="left">1.89 (1.49)</td>
+<td align="left">2.12 (1.47)</td>
+<td align="left">1.40 (1.41)</td>
+<td align="left">-3.14</td>
+<td align="left">0.002</td>
+</tr>
+<tr class="odd">
+<td align="left">P1</td>
+<td align="left">SB_Base</td>
+<td align="left">199</td>
+<td align="left">baseline suicidal behavior 0 is no 1 is yes</td>
+<td align="left">3.58 (1.03)</td>
+<td align="left">3.43 (1.01)</td>
+<td align="left">3.91 (0.99)</td>
+<td align="left">3.13</td>
+<td align="left">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">P2</td>
+<td align="left">Trauma_NonSexual</td>
+<td align="left">199</td>
+<td align="left">any history of nonsexual trauma at baseline 0 is no 1 is yes</td>
+<td align="left">3.34 (1.24)</td>
+<td align="left">3.27 (1.22)</td>
+<td align="left">3.48 (1.27)</td>
+<td align="left">1.12</td>
+<td align="left">0.264</td>
+</tr>
+<tr class="odd">
+<td align="left">P3</td>
+<td align="left">Trauma_Sexual</td>
+<td align="left">199</td>
+<td align="left">any history of sexual trauma at baseline 0 is no 1 is yes</td>
+<td align="left">2.09 (1.59)</td>
+<td align="left">2.04 (1.57)</td>
+<td align="left">2.20 (1.64)</td>
+<td align="left">0.69</td>
+<td align="left">0.493</td>
+</tr>
+<tr class="even">
+<td align="left">P4</td>
+<td align="left">race</td>
+<td align="left">199</td>
+<td align="left">AA is 0, C is 1, As 2, mixed is 3</td>
+<td align="left">2.85 (1.43)</td>
+<td align="left">2.87 (1.40)</td>
+<td align="left">2.83 (1.51)</td>
+<td align="left">-0.18</td>
+<td align="left">0.860</td>
+</tr>
+<tr class="odd">
+<td align="left">P5</td>
+<td align="left">race_bin</td>
+<td align="left">199</td>
+<td align="left">c is 0 non c is 1</td>
+<td align="left">2.70 (1.31)</td>
+<td align="left">2.50 (1.29)</td>
+<td align="left">3.11 (1.27)</td>
+<td align="left">3.1</td>
+<td align="left">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">Ptot</td>
+<td align="left">schizotypal</td>
+<td align="left">199</td>
+<td align="left">scz is 1 non is 0</td>
+<td align="left">14.57 (4.00)</td>
+<td align="left">14.11 (3.99)</td>
+<td align="left">15.53 (3.87)</td>
+<td align="left">2.37</td>
+<td align="left">0.019</td>
+</tr>
+<tr class="odd">
+<td align="left">N1</td>
+<td align="left">GRDS</td>
+<td align="left">199</td>
+<td align="left">Genetic Risk and Deterioration syndrome no is 0 yes is 1</td>
+<td align="left">3.54 (1.57)</td>
+<td align="left">3.30 (1.54)</td>
+<td align="left">4.03 (1.53)</td>
+<td align="left">3.12</td>
+<td align="left">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">N2</td>
+<td align="left">famhx1</td>
+<td align="left">199</td>
+<td align="left">fam hx of psychosis 0 no 1 yes</td>
+<td align="left">3.38 (1.63)</td>
+<td align="left">3.28 (1.66)</td>
+<td align="left">3.59 (1.56)</td>
+<td align="left">1.26</td>
+<td align="left">0.208</td>
+</tr>
+<tr class="odd">
+<td align="left">N3</td>
+<td align="left">Age</td>
+<td align="left">199</td>
+<td align="left">Age</td>
+<td align="left">2.09 (1.72)</td>
+<td align="left">1.87 (1.64)</td>
+<td align="left">2.55 (1.83)</td>
+<td align="left">2.61</td>
+<td align="left">0.010</td>
+</tr>
+<tr class="even">
+<td align="left">N4</td>
+<td align="left">Female</td>
+<td align="left">199</td>
+<td align="left">0 is no 1 is yes</td>
+<td align="left">2.49 (1.89)</td>
+<td align="left">2.40 (1.94)</td>
+<td align="left">2.67 (1.77)</td>
+<td align="left">0.95</td>
+<td align="left">0.343</td>
+</tr>
+<tr class="odd">
+<td align="left">N5</td>
+<td align="left">Conversion</td>
+<td align="left">199</td>
+<td align="left">0 is no conversion 1 is yes converted to psychosis</td>
+<td align="left">1.85 (1.42)</td>
+<td align="left">1.67 (1.30)</td>
+<td align="left">2.25 (1.56)</td>
+<td align="left">2.76</td>
+<td align="left">0.006</td>
+</tr>
+<tr class="even">
+<td align="left">N6</td>
+<td align="left">P4a</td>
+<td align="left">199</td>
+<td align="left">auditory hallucations</td>
+<td align="left">3.79 (1.70)</td>
+<td align="left">3.69 (1.73)</td>
+<td align="left">4.00 (1.61)</td>
+<td align="left">1.21</td>
+<td align="left">0.228</td>
+</tr>
+<tr class="odd">
+<td align="left">N.Total</td>
+<td align="left">P4v</td>
+<td align="left">199</td>
+<td align="left">visual hallucinations</td>
+<td align="left">17.14 (6.65)</td>
+<td align="left">16.21 (6.39)</td>
+<td align="left">19.09 (6.82)</td>
+<td align="left">2.91</td>
+<td align="left">0.004</td>
+</tr>
+<tr class="even">
+<td align="left">D1</td>
+<td align="left">P1</td>
+<td align="left">199</td>
+<td align="left">unusual thought content</td>
+<td align="left">2.57 (1.36)</td>
+<td align="left">2.36 (1.34)</td>
+<td align="left">3.02 (1.32)</td>
+<td align="left">3.26</td>
+<td align="left">0.001</td>
+</tr>
+<tr class="odd">
+<td align="left">D2</td>
+<td align="left">P2</td>
+<td align="left">199</td>
+<td align="left">paranoia</td>
+<td align="left">2.53 (1.46)</td>
+<td align="left">2.44 (1.42)</td>
+<td align="left">2.72 (1.55)</td>
+<td align="left">1.27</td>
+<td align="left">0.205</td>
+</tr>
+<tr class="even">
+<td align="left">D3</td>
+<td align="left">P3</td>
+<td align="left">199</td>
+<td align="left">grandiosity</td>
+<td align="left">3.17 (1.20)</td>
+<td align="left">3.01 (1.16)</td>
+<td align="left">3.48 (1.23)</td>
+<td align="left">2.61</td>
+<td align="left">0.010</td>
+</tr>
+<tr class="odd">
+<td align="left">D4</td>
+<td align="left">P4</td>
+<td align="left">199</td>
+<td align="left">overall hallucinations</td>
+<td align="left">1.62 (1.63)</td>
+<td align="left">1.59 (1.65)</td>
+<td align="left">1.69 (1.59)</td>
+<td align="left">0.38</td>
+<td align="left">0.702</td>
+</tr>
+<tr class="even">
+<td align="left">D.Total</td>
+<td align="left">P5</td>
+<td align="left">199</td>
+<td align="left">disorganization</td>
+<td align="left">9.88 (3.82)</td>
+<td align="left">9.40 (3.76)</td>
+<td align="left">10.91 (3.77)</td>
+<td align="left">2.64</td>
+<td align="left">0.009</td>
+</tr>
+<tr class="odd">
+<td align="left">G1</td>
+<td align="left">Ptot</td>
+<td align="left">197</td>
+<td align="left">total positive symptoms sum of P1 P5</td>
+<td align="left">2.69 (1.74)</td>
+<td align="left">2.65 (1.75)</td>
+<td align="left">2.77 (1.73)</td>
+<td align="left">0.42</td>
+<td align="left">0.674</td>
+</tr>
+<tr class="even">
+<td align="left">G2</td>
+<td align="left">N1</td>
+<td align="left">199</td>
+<td align="left">Social anhedonia</td>
+<td align="left">3.23 (1.55)</td>
+<td align="left">3.40 (1.53)</td>
+<td align="left">2.86 (1.55)</td>
+<td align="left">-2.32</td>
+<td align="left">0.021</td>
+</tr>
+<tr class="odd">
+<td align="left">G3</td>
+<td align="left">N2</td>
+<td align="left">199</td>
+<td align="left">avolition</td>
+<td align="left">1.92 (1.58)</td>
+<td align="left">1.70 (1.47)</td>
+<td align="left">2.39 (1.72)</td>
+<td align="left">2.94</td>
+<td align="left">0.004</td>
+</tr>
+<tr class="even">
+<td align="left">G4</td>
+<td align="left">N3</td>
+<td align="left">199</td>
+<td align="left">expression of emotion</td>
+<td align="left">3.91 (1.83)</td>
+<td align="left">3.91 (1.84)</td>
+<td align="left">3.91 (1.83)</td>
+<td align="left">-0.02</td>
+<td align="left">0.986</td>
+</tr>
+<tr class="odd">
+<td align="left">G.Total</td>
+<td align="left">N4</td>
+<td align="left">197</td>
+<td align="left">experience of emotions and self</td>
+<td align="left">11.74 (4.25)</td>
+<td align="left">11.65 (4.47)</td>
+<td align="left">11.92 (3.77)</td>
+<td align="left">0.42</td>
+<td align="left">0.672</td>
+</tr>
+<tr class="even">
+<td align="left">SIPS.Total</td>
+<td align="left">N5</td>
+<td align="left">199</td>
+<td align="left">ideational richness</td>
+<td align="left">53.53 (13.75)</td>
+<td align="left">51.67 (14.14)</td>
+<td align="left">57.45 (12.07)</td>
+<td align="left">2.82</td>
+<td align="left">0.005</td>
+</tr>
+<tr class="odd">
+<td align="left">GAF</td>
+<td align="left">N6</td>
+<td align="left">197</td>
+<td align="left">occupational functioning</td>
+<td align="left">45.18 (6.84)</td>
+<td align="left">46.10 (7.08)</td>
+<td align="left">43.18 (5.86)</td>
+<td align="left">-2.84</td>
+<td align="left">0.005</td>
+</tr>
+<tr class="even">
+<td align="left">GFS..Social</td>
+<td align="left">N Total</td>
+<td align="left">158</td>
+<td align="left">total negative symptoms sum of N1 N6</td>
+<td align="left">5.35 (1.77)</td>
+<td align="left">5.35 (1.76)</td>
+<td align="left">5.37 (1.82)</td>
+<td align="left">0.07</td>
+<td align="left">0.945</td>
+</tr>
+<tr class="odd">
+<td align="left">GFS..Role</td>
+<td align="left">D1</td>
+<td align="left">158</td>
+<td align="left">odd behavior</td>
+<td align="left">5.16 (2.35)</td>
+<td align="left">5.12 (2.29)</td>
+<td align="left">5.28 (2.49)</td>
+<td align="left">0.39</td>
+<td align="left">0.697</td>
+</tr>
+<tr class="even">
+<td align="left">P1PD</td>
+<td align="left">D2</td>
+<td align="left">183</td>
+<td align="left">bizarre thinking</td>
+<td align="left">2.70 (1.12)</td>
+<td align="left">2.64 (1.11)</td>
+<td align="left">2.84 (1.15)</td>
+<td align="left">1.12</td>
+<td align="left">0.266</td>
+</tr>
+<tr class="odd">
+<td align="left">P1FR</td>
+<td align="left">D3</td>
+<td align="left">183</td>
+<td align="left">trouble with focus and attention</td>
+<td align="left">1.73 (1.73)</td>
+<td align="left">1.70 (1.72)</td>
+<td align="left">1.81 (1.75)</td>
+<td align="left">0.39</td>
+<td align="left">0.694</td>
+</tr>
+<tr class="even">
+<td align="left">P1OB</td>
+<td align="left">D4</td>
+<td align="left">183</td>
+<td align="left">impairments in hygiene</td>
+<td align="left">2.14 (1.16)</td>
+<td align="left">2.11 (1.08)</td>
+<td align="left">2.19 (1.32)</td>
+<td align="left">0.44</td>
+<td align="left">0.659</td>
+</tr>
+<tr class="odd">
+<td align="left">P1SNG</td>
+<td align="left">D Total</td>
+<td align="left">183</td>
+<td align="left">total disorganization symptoms sum of D1 D4</td>
+<td align="left">1.96 (1.29)</td>
+<td align="left">1.98 (1.27)</td>
+<td align="left">1.93 (1.36)</td>
+<td align="left">-0.22</td>
+<td align="left">0.823</td>
+</tr>
+<tr class="even">
+<td align="left">P1NP</td>
+<td align="left">G1</td>
+<td align="left">181</td>
+<td align="left">sleep disturbance</td>
+<td align="left">1.27 (1.35)</td>
+<td align="left">1.29 (1.36)</td>
+<td align="left">1.21 (1.35)</td>
+<td align="left">-0.37</td>
+<td align="left">0.713</td>
+</tr>
+<tr class="odd">
+<td align="left">Idea_Sev_Base</td>
+<td align="left">G2</td>
+<td align="left">193</td>
+<td align="left">dysphoric mood</td>
+<td align="left">56 (29.0)</td>
+<td align="left">28 (21.5)</td>
+<td align="left">28 (44.4)</td>
+<td align="left"></td>
+<td align="left">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">Behav_Sev_Base</td>
+<td align="left">G3</td>
+<td align="left">193</td>
+<td align="left">motor disturbance</td>
+<td align="left">12 ( 6.2)</td>
+<td align="left">4 ( 3.1)</td>
+<td align="left">8 (12.7)</td>
+<td align="left"></td>
+<td align="left">0.023</td>
+</tr>
+<tr class="odd">
+<td align="left">SI_Base</td>
+<td align="left">G4</td>
+<td align="left">193</td>
+<td align="left">impaired tolerance to stress</td>
+<td align="left">13 ( 6.7)</td>
+<td align="left">7 ( 5.4)</td>
+<td align="left">6 ( 9.5)</td>
+<td align="left"></td>
+<td align="left">0.442</td>
+</tr>
+<tr class="even">
+<td align="left">SB_Base</td>
+<td align="left">G Total</td>
+<td align="left">193</td>
+<td align="left">total general symptoms sum of G1 G4</td>
+<td align="left">5 ( 2.6)</td>
+<td align="left">2 ( 1.5)</td>
+<td align="left">3 ( 4.8)</td>
+<td align="left"></td>
+<td align="left">0.402</td>
+</tr>
+<tr class="odd">
+<td align="left">Trauma_NonSexual</td>
+<td align="left">SIPS Total</td>
+<td align="left">193</td>
+<td align="left">sum of all total scores</td>
+<td align="left">29 (15.0)</td>
+<td align="left">20 (15.4)</td>
+<td align="left">9 (14.3)</td>
+<td align="left"></td>
+<td align="left">1.000</td>
+</tr>
+<tr class="even">
+<td align="left">Trauma_Sexual</td>
+<td align="left">GAF</td>
+<td align="left">193</td>
+<td align="left">global assessment of functioning 0 100</td>
+<td align="left">21 (10.9)</td>
+<td align="left">12 ( 9.2)</td>
+<td align="left">9 (14.3)</td>
+<td align="left"></td>
+<td align="left">0.417</td>
+</tr>
+<tr class="odd">
+<td align="left">Race (4 Category)</td>
+<td align="left">GFS</td>
+<td align="left">193</td>
+<td align="left">Social social functioning</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">0.020</td>
+</tr>
+<tr class="even">
+<td align="left">Afr. Am.</td>
+<td align="left">GFS</td>
+<td align="left"></td>
+<td align="left">Role role functioning</td>
+<td align="left">43 (22.3)</td>
+<td align="left">26 (20.0)</td>
+<td align="left">17 (27.0)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Cauc.</td>
+<td align="left">P1PD</td>
+<td align="left"></td>
+<td align="left">P1 subsymptom perplexity and delusional mood</td>
+<td align="left">87 (45.1)</td>
+<td align="left">67 (51.5)</td>
+<td align="left">20 (31.7)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Asian</td>
+<td align="left">P1FR</td>
+<td align="left"></td>
+<td align="left">p1 subsymptom first rank symptoms</td>
+<td align="left">15 ( 7.8)</td>
+<td align="left">6 ( 4.6)</td>
+<td align="left">9 (14.3)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Other</td>
+<td align="left">P1OB</td>
+<td align="left"></td>
+<td align="left">P1 subsymptom overvalued beliefs</td>
+<td align="left">48 (24.9)</td>
+<td align="left">31 (23.8)</td>
+<td align="left">17 (27.0)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Race (Binary)</td>
+<td align="left">P1SNG</td>
+<td align="left">193</td>
+<td align="left">p1 subsymptom somatic nihilistic and very guilty ideas</td>
+<td align="left">106 (54.9)</td>
+<td align="left">63 (48.5)</td>
+<td align="left">43 (68.3)</td>
+<td align="left"></td>
+<td align="left">0.015</td>
+</tr>
+<tr class="odd">
+<td align="left">Schizotypal</td>
+<td align="left">P1NP</td>
+<td align="left">193</td>
+<td align="left">P1 non persecutory ideas of reference</td>
+<td align="left">111 (57.5)</td>
+<td align="left">70 (53.8)</td>
+<td align="left">41 (65.1)</td>
+<td align="left"></td>
+<td align="left">0.185</td>
+</tr>
+<tr class="even">
+<td align="left">GRDS</td>
+<td align="left"></td>
+<td align="left">184</td>
+<td align="left"></td>
+<td align="left">8 ( 4.3)</td>
+<td align="left">5 ( 4.0)</td>
+<td align="left">3 ( 5.0)</td>
+<td align="left"></td>
+<td align="left">1.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Family History</td>
+<td align="left"></td>
+<td align="left">165</td>
+<td align="left"></td>
+<td align="left">61 (37.0)</td>
+<td align="left">41 (38.3)</td>
+<td align="left">20 (34.5)</td>
+<td align="left"></td>
+<td align="left">0.750</td>
+</tr>
+<tr class="even">
+<td align="left">Female</td>
+<td align="left">Idea_Sev_Base</td>
+<td align="left">196</td>
+<td align="left">Baseline Violent Ideation 0 is no 1 is yes</td>
+<td align="left">53 (27.0)</td>
+<td align="left">41 (30.6)</td>
+<td align="left">12 (19.4)</td>
+<td align="left"></td>
+<td align="left">0.140</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Below table shows similar info with Cohen’s d calculated for each continuous measure
+<ul>
+<li>Note it’s computed as nonconverter - converter (take opposite for paper)</li>
+</ul></li>
+</ul>
+<pre><code>##             no_conv  conv     t  df    p n1  n2     d min max
+## Age           20.11 20.02 -0.16 196 0.87 63 135 -0.02  13  29
+## P4a            2.54  2.36 -0.71 182 0.48 58 126 -0.11   0   5
+## P4v            2.12  1.40 -3.14 182 0.00 58 126 -0.50   0   4
+## P1             3.43  3.91  3.13 197 0.00 64 135  0.47   0   5
+## P2             3.27  3.48  1.12 197 0.26 64 135  0.17   0   5
+## P3             2.04  2.20  0.69 197 0.49 64 135  0.10   0   5
+## P4             2.87  2.83 -0.18 197 0.86 64 135 -0.03   0   5
+## P5             2.50  3.11  3.10 197 0.00 64 135  0.47   0   5
+## Ptot          14.11 15.53  2.37 197 0.02 64 135  0.36   4  22
+## N1             3.30  4.03  3.12 197 0.00 64 135  0.47   0   6
+## N2             3.28  3.59  1.26 197 0.21 64 135  0.19   0   6
+## N3             1.87  2.55  2.61 197 0.01 64 135  0.40   0   6
+## N4             2.40  2.67  0.95 197 0.34 64 135  0.14   0   6
+## N5             1.67  2.25  2.76 197 0.01 64 135  0.42   0   5
+## N6             3.69  4.00  1.21 197 0.23 64 135  0.18   0   6
+## N.Total       16.21 19.09  2.91 197 0.00 64 135  0.44   0  31
+## D1             2.36  3.02  3.26 197 0.00 64 135  0.50   0   5
+## D2             2.44  2.72  1.27 197 0.21 64 135  0.19   0   5
+## D3             3.01  3.48  2.61 197 0.01 64 135  0.40   0   6
+## D4             1.59  1.69  0.38 197 0.70 64 135  0.06   0   6
+## D.Total        9.40 10.91  2.64 197 0.01 64 135  0.40   1  18
+## G1             2.65  2.77  0.42 195 0.67 64 133  0.06   0   6
+## G2             3.40  2.86 -2.32 197 0.02 64 135 -0.35   0   6
+## G3             1.70  2.39  2.94 197 0.00 64 135  0.45   0   6
+## G4             3.91  3.91 -0.02 197 0.99 64 135  0.00   0   6
+## G.Total       11.65 11.92  0.42 195 0.67 64 133  0.06   0  20
+## SIPS.Total    51.67 57.45  2.82 197 0.01 64 135  0.43  16  82
+## GAF           46.10 43.18 -2.84 195 0.01 62 135 -0.44  31  60
+## GFS..Social    5.35  5.37  0.07 156 0.95 46 112  0.01   1  10
+## GFS..Role      5.12  5.28  0.39 156 0.70 47 111  0.07   1  10
+## P1PD           2.64  2.84  1.12 181 0.27 57 126  0.18   0   5
+## P1FR           1.70  1.81  0.39 181 0.69 57 126  0.06   0   5
+## P1OB           2.11  2.19  0.44 181 0.66 57 126  0.07   0   4
+## P1SNG          1.98  1.93 -0.22 181 0.82 57 126 -0.04   0   5
+## P1NP           1.29  1.21 -0.37 179 0.71 57 124 -0.06   0   5</code></pre>
+</div>
+<div id="data-preparation-for-modeling" class="section level2">
+<h2>Data Preparation for Modeling</h2>
+<ul>
+<li>For constructing the the predictive model we consider all covariates from the descriptive table except:
+<ul>
+<li>we remove the 4 category race variable (leave in the binary one)</li>
+<li>we remove total scores (Ptot, N.Total, D.Total, G.Total and SIPS.Total) since we include the components of each</li>
+</ul></li>
+<li>We employ K Nearest Neighbors (kNN) Imputaion (k = 5) using the VIM package (kNN function) in R to ``fill in’’ missing data, which handles both continuous and categorical variables. (A. Kowarik, M. Templ (2016) Imputation with R package VIM. Journal of Statistical Software, 74(7), 1-16.)</li>
+</ul>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

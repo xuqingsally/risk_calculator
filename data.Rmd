@@ -1,0 +1,336 @@
+---
+title: "Data used for modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+<br>
+[[Data Variables' Description ]{style="float:right"}](./variable_name.pdf) 
+
+***
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mi)
+library(tableone)
+library(pander)
+library(VIM)
+library(glmnet)
+library(pROC)
+library(caTools)
+
+# original data set from Ragy
+pc_dat <- read.csv("./data/Database Risk Calculator (111616).csv")
+names(pc_dat)
+
+# per Ragy's suggestion change obs 756 and 794 G1 value to NA
+# also have to change their G.Totals to NA
+which(pc_dat$ID == 756)
+which(pc_dat$ID == 794)
+pc_dat[c(156,194),36] <- NA
+pc_dat[c(156,194),40] <- NA
+
+# also have 2 obs with Female = 3 - changing to NA
+pc_dat[which(pc_dat$Female == 3),14] <- NA
+
+# Change conversion status based on "Sample_Info_092017_Ragy" document
+pc_dat$Conversion[pc_dat$ID == 607] <- 1
+pc_dat$Conversion[pc_dat$ID == 618] <- 1
+pc_dat$Conversion[pc_dat$ID == 620] <- 1
+pc_dat$Conversion[pc_dat$ID == 767] <- 1
+pc_dat$Conversion[pc_dat$ID == 778] <- 1 
+pc_dat$Conversion[pc_dat$ID == 793] <- 1
+pc_dat$Conversion[pc_dat$ID == 800] <- 1
+pc_dat$Conversion[pc_dat$ID == 811] <- 1 
+
+# above adjustments are included in the d198 data set below
+# analysis data set - see file "Data Setup 083117.R"
+load("./data/d199_092117.Rdata")
+pc_dat3 <- d199 # renamed to recycle old code
+
+```
+
+## Descriptive Information
+### Original Data Set
+```{r desc1, include = FALSE}
+# original data set
+dim(pc_dat)
+data.frame(names(pc_dat))
+summary(pc_dat)
+pc_dat_miss <- missing_data.frame(pc_dat)
+```
+* Data set has 215 observations with 48 variables
+* Of the 48 variables, 5 are sums of subscores
+     + 12 binary, 14 level categorical, 7 continuous, 28 cont/discrete
+* Full data missingess:
+```{r desc2, echo = FALSE, fig.width = 8.5, fig.height = 5, fig.align = 'center'}
+# assess overall missingness
+image(pc_dat_miss, grayscale = F)
+# show(pc_dat_miss)
+```
+* In the original data set, only 113 with complete data on all 48 variables.
+* Of the 215, 4 are missing conversion status - these subjects are dropped from subsequent analysis.
+* Of the 211 remaining, 12 are missing most/all SIPS variables (N, P, D, G vars - will drop these subjects from subsequent analyses).
+* Have removed 16/215 = 7.4% of the data.
+```{r desc3, include = FALSE}
+# how many complete cases
+cc <- complete.cases(pc_dat)
+sum(cc)
+
+# how many with conversion status
+summary(pc_dat$Conversion)
+Y_av <- !is.na(pc_dat$Conversion)
+sum(is.na(pc_dat$Conversion))
+
+# IDs missing conversion status
+id_missY <- pc_dat$ID[!Y_av]
+
+# remove those missing conversion status (7 obs)
+pc_dat2 <- pc_dat[Y_av,]
+
+# SIPS variable assessment
+# base vars 2:11
+# P vars 16:23
+# N vars 24:30
+# D vars 31:35
+# G vars 36:40
+ns_av <- !is.na(pc_dat2[,24]) # using N1 since those missing N1 are missing all/most others
+sum(is.na(pc_dat2[,24]))
+id_missSIDS <- pc_dat2$ID[!ns_av]
+
+# IDs of those with missing values who were removed (n = 17)
+gone <- c(id_missY,id_missSIDS)
+
+# pc_dat3 is the data set with 198 subjects.
+pc_dat_miss3 <- missing_data.frame(pc_dat3)
+```
+
+### Analysis Data Set
+* For the set of 199 subjects to be analyzed, missingness looks like:
+```{r desc4, echo = FALSE, fig.width = 8.5, fig.height = 5, fig.align = 'center'}
+# analysis data set
+image(pc_dat_miss3, grayscale = F)
+```
+
+#### Missingness per subject:
+
+* Number of variables missing and proportion of sample with that many missing:
+```{r desc5, echo = FALSE}
+# analysis data set
+# characterize missingness in the n = 199 remaining
+# how many vars missing per obs
+na_sum <- function(x) sum(is.na(x))
+miss_tab <- round(table(apply(pc_dat3, 1, na_sum)) / dim(pc_dat3)[1], 3)
+miss_tab
+
+# total % of missing data (inlcuding conversion status)
+sum(apply(pc_dat3, 1, na_sum)) / (48*199)
+```
+* Cummulative proportion missing x or less
+```{r desc6, echo = FALSE}
+cumsum(miss_tab)
+```     
+
+
+#### Missingness per variable:
+```{r desc7, echo = FALSE}
+data.frame(count = apply(pc_dat3, 2, na_sum), 
+           prop = round(apply(pc_dat3, 2, na_sum)/dim(pc_dat3)[1],3))
+```  
+
+<br>
+
+## Compsrisons between converters/non-converters
+
+* Numbers of converters and non-converters:
+```{r desc8, echo = FALSE}
+table(pc_dat3$Conversion)
+```  
+
+```{r desc9, include = FALSE}
+###################################################
+# Summary of data used in analysis - complete info
+###################################################
+
+# continuous variables c(13,16:49)
+sm_summary_cont <- function(x) {
+	out <- c(round(mean(x, na.rm = T),2), round(sd(x, na.rm = T),2), sum(!is.na(x)))
+	return(out)
+}
+df_cont <- data.frame(t(apply(pc_dat3[,c(13,16:49)],2, sm_summary_cont)))
+names(df_cont) <- c("mean", "sd", "n_obs")
+
+# par(mfrow = c(6,6))
+# for(j in 16:49) hist(pc_dat3[,j], main = names(pc_dat3)[j])
+
+# binary variables c(2:7,9:12,14:15)
+sm_summary_bin <- function(x) {
+	out <- c(table(x)[2],round(table(x)[2]/sum(table(x)),2), sum(!is.na(x)))
+	return(out)
+}
+df_bin <- data.frame(t(apply(pc_dat3[,c(2:7,9:12,14:15)],2, sm_summary_bin)))
+names(df_bin) <- c("freq", "prop", "n_obs")
+
+# race (4-category)
+table(pc_dat3[,8])
+round(table(pc_dat3[,8])/sum(table(pc_dat3[,8])),2)
+sum(!is.na(pc_dat3[,8]))
+
+#######################################################
+# Marginal Associations with Conversion - complete info
+########################################################
+# marginal associations of continuous vars with conversion
+marg_cont <- function(x) {
+	t_info <- t.test(x ~ factor(pc_dat3[,15], levels = c(1,0)), var.equal = T)
+	ts <- t_info$statistic
+	n1 <- sum(!is.na(x[pc_dat3[,15] == 1]))
+	n2 <- sum(!is.na(x[pc_dat3[,15] == 0]))
+	cohens_d <- ts*sqrt(1/n1 + 1/n2)
+	df <- t_info$parameter
+	no_conv <- t_info$estimate[2]
+	conv <- t_info$estimate[1]
+	pval <- t_info$p.value
+	min_x <- min(x, na.rm = TRUE)
+	max_x <- max(x, na.rm = TRUE)
+	out <- c(no_conv, conv, ts, df, pval, n1, n2, cohens_d, min_x, max_x)
+	return(out)
+}
+comp_conv_cont <- data.frame(t(round(apply(pc_dat3[,c(13,16:49)],2,marg_cont),2)))
+names(comp_conv_cont) <- c("no_conv","conv","t","df","p", "n1", "n2", "d", "min", "max")
+
+# marginal associations of binary vars with conversion
+marg_bin <- function(x) {
+	fish_info <- fisher.test(table(x,pc_dat3[,15]))
+	chisq_info <- chisq.test(table(x,pc_dat3[,15]))
+	chisq_stat <- chisq_info$statistic
+	no_conv <- mean(x[pc_dat3[,15] == 0], na.rm = T)
+	conv <- mean(x[pc_dat3[,15] == 1], na.rm = T)
+	n_obs <- sum(table(x,pc_dat3[,15]))
+	OR <- (conv/(1-conv)) / (no_conv/(1-no_conv))
+	pval <- fish_info$p.value
+	out <- c(no_conv, conv, OR, n_obs, pval, chisq_stat)
+	return(out)
+}
+comp_conv_bin <- data.frame(t(round(apply(pc_dat3[,c(2:7,9:12,14)],2,marg_bin),2)))
+names(comp_conv_bin) <- c("no_conv","conv","OR","n_obs","p", "chisq_stat")
+
+# marginal associations of race (4-level) with conversion
+fisher.test(table(pc_dat3[,8],pc_dat3[,15]))
+race_tab <- table(pc_dat3[,8],pc_dat3[,15])
+divby <- function(x) {
+	x_mat <- as.matrix(x)
+	c_tot <- apply(x_mat, 2, sum) 
+	props <- round(cbind(x_mat[,1]/c_tot[1], x_mat[,2]/c_tot[2]),2)
+	return(props)
+}
+r_tab <- divby(race_tab)
+colnames(r_tab) <- c("no_conv","conv")
+rownames(r_tab) <- c("AA","C","As","Oth")
+sum(race_tab)
+
+####################################################
+
+# use tableone package
+varnames <- names(pc_dat3)[c(13,16:49,2:12,14)]
+factor_vars <- names(pc_dat3)[c(2:12,14)]
+
+# overall
+t_all <- CreateTableOne(vars = varnames, factorVars = factor_vars, data = pc_dat3)
+n_obs0 <- c(199 - t_all$ContTable$Overall[,2], unlist(lapply(t_all$CatTable$Overall, function(x) x[1,1] - x[1,2])))
+n_obs <- c(n_obs0[1:42], rep("",4), n_obs0[43:47])
+
+print_t_all0 <- print(t_all)
+print_t_all <- cbind(n_obs, print_t_all0[-1,])
+rownames(print_t_all)[42] <- "Race (4 Category)"
+rownames(print_t_all)[43] <- "Afr. Am."
+rownames(print_t_all)[44] <- "Cauc."
+rownames(print_t_all)[45] <- "Asian"
+rownames(print_t_all)[46] <- "Other"
+rownames(print_t_all)[47] <- "Race (Binary)"
+rownames(print_t_all)[48] <- "Schizotypal"
+rownames(print_t_all)[49] <- "GRDS"
+rownames(print_t_all)[50] <- "Family History"
+
+# by conversion status
+t_conv <- CreateTableOne(vars = varnames, strata = c("Conversion"), factorVars = factor_vars, data = pc_dat3)
+print_t_conv <- print(t_conv)
+# get test stats - from previous code
+test_stats <- c(comp_conv_cont[,3], rep("",16))
+
+# whole table
+whole_tab0 <- cbind(print_t_all, print_t_conv[-1,1:2], test_stats, print_t_conv[-1,3])
+whole_tab1 <- rbind(c("", "(n = 199)", "(n = 135)", "(n = 64)", "", ""), whole_tab0)
+whole_tab <- data.frame(whole_tab1)
+names(whole_tab) <- c("n Obs.", "Full", "Nonconv", "Conv", "Stat.", "p")
+whole_tab2 <- cbind(c("",rownames(print_t_all)), whole_tab1)
+rownames(whole_tab2) <- NULL
+colnames(whole_tab2) <- c("Variables", names(whole_tab))
+
+# give full variable names
+names_dat <- read.csv("./data/full_var_names.csv")
+full_var_name <- c("", as.character(names_dat[,2]))
+range_vals <- c("", as.character(names_dat[,3]))
+
+# augment table
+whole_tab3 <- cbind(whole_tab2[,1], full_var_name, whole_tab2[,2], range_vals, whole_tab2[,3:7])
+colnames(whole_tab3) <- c("Variables", "Variable Names", "N", "Range", "Full", "Non-Converter", "Converter", "Stat", "p") 
+```  
+
+* Mean (sd) reported for each continous variable and n (%) for each categorical variable.  t-tests used to compare converters and non-converters on continuous measures and Fisher's exact test used for categorical measures. 
+```{r desc10, echo = FALSE}
+# could rerun this table in separate file using landscape word template
+set.alignment(c("left", rep("center",6)))
+# pandoc.table(whole_tab2, split.cells = c(8,1,10,10,10,1,1), style = "simple")
+#pandoc.table(whole_tab2, split.cells = c(8,1,10,10,10,1,1), style = "grid")
+#knitr::kable(whole_tab2)
+knitr::kable(whole_tab3)
+```  
+
+
+* Below table shows similar info with Cohen's d calculated for each continuous measure
+     + Note it's computed as nonconverter - converter (take opposite for paper)
+```{r desc10_2, echo = FALSE}
+comp_conv_cont
+```
+
+
+## Data Preparation for Modeling
+* For constructing the the predictive model we consider all covariates from the descriptive table except:
+     + we remove the 4 category race variable (leave in the binary one)
+     + we remove total scores (Ptot, N.Total, D.Total, G.Total and SIPS.Total) since we include the components of each
+* We employ K Nearest Neighbors (kNN) Imputaion (k = 5) using the VIM package (kNN function) in R to ``fill in'' missing data, which handles both continuous and categorical variables. (A. Kowarik, M. Templ (2016) Imputation with R package VIM. Journal of Statistical Software, 74(7), 1-16.)
+```{r mod1, include = FALSE}
+# remove, ID, 4-category race, and totals
+d198_red <- d199[,-c(1,8,23,30,35,40,41)] # called d198_red as hold over from previous analysis
+d198_red$Conversion <- factor(ifelse(d198_red$Conversion == 1, "conv", "no_conv"))
+
+# kNN Imputation
+knn_d198_red_all <- kNN(d198_red)
+knn_d198_red <- knn_d198_red_all[,1:42]
+knn_d198_red_imp_ind <- knn_d198_red_all[,43:84] # idicates if value is imputed
+
+# outcome
+Y <- 1*(knn_d198_red[,13] == "conv") 
+
+# consider subscales as continuous/ordinal - not standardized
+# matrix of covariates - (13th col is conversion status)
+knn_X_cont <- as.matrix(knn_d198_red[,c(1:12,14:42)])
+summary(knn_X_cont)
+
+# set up multiple fold-id settings for repreated CV - keeps the same conv/nonconv rate in each split
+fid_list <- list()
+for(k in 1:100) {
+	set.seed(1234*k)
+	case_spl <- split(sample(which(Y == 1)), f = c(rep(1:4, each = 13), rep(5, 12)))
+	cont_spl <- split(sample(which(Y == 0)), f = rep(1:5, each = 27))
+	spl <- mapply(c, case_spl, cont_spl)
+	fids <- rep(NA, length(Y))
+	for(j in 1:5) fids[spl[[j]]] <- j
+	fid_list[[k]] <- fids 
+}
+
+# check to see that conv/nonconv rate in each split for a given split set
+# for(j in 1:5) print(table(Y[fid_list[[82]] == j]))
+```
+
