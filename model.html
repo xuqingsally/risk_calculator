@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Prediction Model of Psychosis Conversion Data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="model.html">Model</a>
+</li>
+<li>
+  <a href="mailto:&lt;qx2178@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/xuqingsally">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Prediction Model of Psychosis Conversion Data</h1>
+
+</div>
+
+
+<hr />
+<ul>
+<li>We used logistic regression with main effects only for each covariate and the outcome is conversion to psychosis.</li>
+<li>Subscales were included assuming a linear relationship with the logit.</li>
+<li>A lasso penalized fitting procedure was used to perform variable selection and estimation of the model. 5-fold cross validation (folds constructed to reflect the ~30% case rate in the sample) was used to determine the penalization parameter. This was carried out using functions from the R package glmnet.<br />
+</li>
+<li>Validation of the model is based on bootstrapping the performacne measures (AUC, Breir Score) - using procedure outlined in Harrell 1996 Stat in Medicine Vol 15 361 - 387 (Tutorial in Biostatistics: Multivariate Prog. Models: Issues…)</li>
+</ul>
+<div id="model-coefficients" class="section level3">
+<h3>Model Coefficients</h3>
+<ul>
+<li>Tables show
+<ul>
+<li>Beta = estimated coefficient for corresponding predictor (note that predictors are NOT standardized)</li>
+<li>Std_Beta = estimated coefficient for corresponding predictor when predictor is standardized (table is ordered by increasing magnitude of this Std_Beta)</li>
+<li>Prop_Sel_BS = proportion of times that the predictor was selected to remain in the model using the bootstrapping procedure</li>
+</ul></li>
+<li><p>Selected Variables</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>Beta S</th>
+<th>td_Beta P</th>
+<th align="left">rop_Sel_BS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>P4v</td>
+<td>-0.25</td>
+<td>-0.36</td>
+<td align="left">0.99</td>
+</tr>
+<tr class="even">
+<td>P1</td>
+<td>0.25</td>
+<td>0.26</td>
+<td align="left">0.90</td>
+</tr>
+<tr class="odd">
+<td>Idea_Sev_Base</td>
+<td>0.51</td>
+<td>0.23</td>
+<td align="left">0.95</td>
+</tr>
+<tr class="even">
+<td>P5</td>
+<td>0.16</td>
+<td>0.21</td>
+<td align="left">0.90</td>
+</tr>
+<tr class="odd">
+<td>G2</td>
+<td>-0.14</td>
+<td>-0.21</td>
+<td align="left">0.95</td>
+</tr>
+<tr class="even">
+<td>race_bin..c.is.0..non.c.is.1</td>
+<td>0.38</td>
+<td>0.19</td>
+<td align="left">0.92</td>
+</tr>
+<tr class="odd">
+<td>N1</td>
+<td>0.12</td>
+<td>0.19</td>
+<td align="left">0.90</td>
+</tr>
+<tr class="even">
+<td>Behav_Sev_Base</td>
+<td>0.62</td>
+<td>0.15</td>
+<td align="left">0.90</td>
+</tr>
+<tr class="odd">
+<td>GAF</td>
+<td>-0.02</td>
+<td>-0.14</td>
+<td align="left">0.86</td>
+</tr>
+<tr class="even">
+<td>G3</td>
+<td>0.04</td>
+<td>0.07</td>
+<td align="left">0.73</td>
+</tr>
+<tr class="odd">
+<td>D3</td>
+<td>0.02</td>
+<td>0.03</td>
+<td align="left">0.69</td>
+</tr>
+<tr class="even">
+<td>N5</td>
+<td>0.02</td>
+<td>0.02</td>
+<td align="left">0.66</td>
+</tr>
+<tr class="odd">
+<td>P1PD</td>
+<td>0.02</td>
+<td>0.02</td>
+<td align="left">0.73</td>
+</tr>
+<tr class="even">
+<td>SI_Base</td>
+<td>0.02</td>
+<td>0.00</td>
+<td align="left">0.67</td>
+</tr>
+<tr class="odd">
+<td>P1NP</td>
+<td>0.00</td>
+<td>0.00</td>
+<td align="left">0.63</td>
+</tr>
+<tr class="even">
+<td>P1SNG</td>
+<td>0.00</td>
+<td>0.00</td>
+<td align="left">0.55</td>
+</tr>
+<tr class="odd">
+<td>P1OB</td>
+<td>0.00</td>
+<td>0.00</td>
+<td align="left">0.59</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>Un-Selected Variables</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">B</th>
+<th>eta S</th>
+<th>td_Beta P</th>
+<th align="left">rop_Sel_BS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">Trauma_Sexual</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">GFS..Social</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">X1..no.is.0..yes.is.1</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">Female</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">P2</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">famhx1..0.no..1.yes</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">Age</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">N3</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">P1FR</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">SB_Base</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">G1</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">Trauma_NonSexual</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">GFS..Role</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">D4</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">D1</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">G4</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">P3</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">N2</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">schizotypal..scz.is.1..non.is.0</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="right">N6</td>
+<td>0</td>
+<td>0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="right">N4</td>
+<td>0</td>
+<td>0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="right">D2</td>
+<td>0</td>
+<td>0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="right">P4a</td>
+<td>0</td>
+<td>0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="right">P4</td>
+<td>0</td>
+<td>0</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</div>
+<div id="in-sample-and-optimism-adjusted-performance" class="section level3">
+<h3>In Sample and Optimism Adjusted Performance</h3>
+<pre class="r"><code># In Sample ROC
+roc_l0 </code></pre>
+<pre><code>## 
+## Call:
+## roc.default(response = Y, predictor = pred_l0)
+## 
+## Data: pred_l0 in 135 controls (Y 0) &lt; 64 cases (Y 1).
+## Area under the curve: 0.8329</code></pre>
+<pre class="r"><code># Optimism Adj ROC
+roc_l0$auc - mean(auc_opts)</code></pre>
+<pre><code>## [1] 0.7185016</code></pre>
+<pre class="r"><code>#
+#
+# In Sample Brier
+brier_l0</code></pre>
+<pre><code>## [1] 0.1608537</code></pre>
+<pre class="r"><code># Optimism Adj Brier
+brier_l0 - mean(brier_opts)</code></pre>
+<pre><code>## [1] 0.2202389</code></pre>
+<ul>
+<li><p>Left column shows various categories/cut-offs (e.g., you classified as a converter if your predicted probability falls within the range x – 1.00) to determine conversion status. The corresponding roc curves are provided. The first set of PPV, NPV, Sensitivity, and Specificity values are based on the sample used to fit the model and are overly optimistic. The second set of PPV, NPV, Sensitivity, and Specificity values use the same bootstrap procedure used above to compute corrected values.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">B</th>
+<th align="left">ase Rate</th>
+<th align="center">PPV</th>
+<th align="center">NPV</th>
+<th align="center">Sens</th>
+<th align="center">Spec</th>
+<th align="center">PPV</th>
+<th align="center">NPV</th>
+<th align="left">Sens</th>
+<th align="left">Spec</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.05-1.00</td>
+<td align="left">99.50</td>
+<td align="center">32.16</td>
+<td align="center">100.00</td>
+<td align="center">100.00</td>
+<td align="center">0.74</td>
+<td align="center">30.43</td>
+<td align="center">-23.79</td>
+<td align="left">93.48</td>
+<td align="left">-0.59</td>
+</tr>
+<tr class="even">
+<td align="right">0.1-1.00</td>
+<td align="left">95.98</td>
+<td align="center">33.34</td>
+<td align="center">100.00</td>
+<td align="center">100.00</td>
+<td align="center">5.93</td>
+<td align="center">30.60</td>
+<td align="center">39.87</td>
+<td align="left">91.10</td>
+<td align="left">2.78</td>
+</tr>
+<tr class="odd">
+<td align="right">0.15-1.00</td>
+<td align="left">86.93</td>
+<td align="center">36.25</td>
+<td align="center">96.18</td>
+<td align="center">98.44</td>
+<td align="center">18.52</td>
+<td align="center">32.35</td>
+<td align="center">70.34</td>
+<td align="left">87.82</td>
+<td align="left">13.59</td>
+</tr>
+<tr class="even">
+<td align="right">0.2-1.00</td>
+<td align="left">72.36</td>
+<td align="center">42.18</td>
+<td align="center">94.58</td>
+<td align="center">95.31</td>
+<td align="center">38.52</td>
+<td align="center">36.63</td>
+<td align="center">80.36</td>
+<td align="left">83.27</td>
+<td align="left">32.21</td>
+</tr>
+<tr class="odd">
+<td align="right">0.25-1.00</td>
+<td align="left">61.81</td>
+<td align="center">47.78</td>
+<td align="center">93.47</td>
+<td align="center">92.19</td>
+<td align="center">52.59</td>
+<td align="center">40.48</td>
+<td align="center">82.08</td>
+<td align="left">78.94</td>
+<td align="left">45.38</td>
+</tr>
+<tr class="even">
+<td align="right">0.3-1.00</td>
+<td align="left">48.74</td>
+<td align="center">54.46</td>
+<td align="center">89.29</td>
+<td align="center">82.81</td>
+<td align="center">67.41</td>
+<td align="center">44.55</td>
+<td align="center">80.21</td>
+<td align="left">68.66</td>
+<td align="left">59.78</td>
+</tr>
+<tr class="odd">
+<td align="right">0.35-1.00</td>
+<td align="left">39.20</td>
+<td align="center">58.80</td>
+<td align="center">85.22</td>
+<td align="center">71.88</td>
+<td align="center">76.30</td>
+<td align="center">45.99</td>
+<td align="center">77.21</td>
+<td align="left">57.05</td>
+<td align="left">68.47</td>
+</tr>
+<tr class="even">
+<td align="right">0.4-1.00</td>
+<td align="left">32.16</td>
+<td align="center">65.46</td>
+<td align="center">83.80</td>
+<td align="center">65.62</td>
+<td align="center">83.70</td>
+<td align="center">49.68</td>
+<td align="center">76.51</td>
+<td align="left">50.43</td>
+<td align="left">75.96</td>
+</tr>
+<tr class="odd">
+<td align="right">0.45-1.00</td>
+<td align="left">22.11</td>
+<td align="center">72.58</td>
+<td align="center">79.48</td>
+<td align="center">50.00</td>
+<td align="center">91.11</td>
+<td align="center">50.03</td>
+<td align="center">73.16</td>
+<td align="left">34.81</td>
+<td align="left">83.64</td>
+</tr>
+<tr class="even">
+<td align="right">0.5-1.00</td>
+<td align="left">13.07</td>
+<td align="center">80.65</td>
+<td align="center">75.28</td>
+<td align="center">32.81</td>
+<td align="center">96.30</td>
+<td align="center">43.89</td>
+<td align="center">69.79</td>
+<td align="left">17.92</td>
+<td align="left">89.22</td>
+</tr>
+<tr class="odd">
+<td align="right">0.55-1.00</td>
+<td align="left">8.54</td>
+<td align="center">94.08</td>
+<td align="center">73.77</td>
+<td align="center">25.00</td>
+<td align="center">99.26</td>
+<td align="center">40.73</td>
+<td align="center">68.80</td>
+<td align="left">10.73</td>
+<td align="left">92.66</td>
+</tr>
+<tr class="even">
+<td align="right">0.6-1.00</td>
+<td align="left">5.03</td>
+<td align="center">100.00</td>
+<td align="center">71.58</td>
+<td align="center">15.62</td>
+<td align="center">100.00</td>
+<td align="center">15.62</td>
+<td align="center">67.15</td>
+<td align="left">2.40</td>
+<td align="left">93.91</td>
+</tr>
+<tr class="odd">
+<td align="right">0.65-1.00</td>
+<td align="left">2.51</td>
+<td align="center">100.00</td>
+<td align="center">69.74</td>
+<td align="center">7.81</td>
+<td align="center">100.00</td>
+<td align="center">-53.59</td>
+<td align="center">65.87</td>
+<td align="left">-4.07</td>
+<td align="left">94.51</td>
+</tr>
+<tr class="even">
+<td align="right">0.7-1.00</td>
+<td align="left">1.51</td>
+<td align="center">100.00</td>
+<td align="center">69.04</td>
+<td align="center">4.69</td>
+<td align="center">100.00</td>
+<td align="center">-116.50</td>
+<td align="center">65.68</td>
+<td align="left">-5.59</td>
+<td align="left">95.11</td>
+</tr>
+<tr class="odd">
+<td align="right">0.75-1.00</td>
+<td align="left">0.50</td>
+<td align="center">100.00</td>
+<td align="center">68.34</td>
+<td align="center">1.56</td>
+<td align="center">100.00</td>
+<td align="center">-314.95</td>
+<td align="center">65.56</td>
+<td align="left">-6.87</td>
+<td align="left">95.74</td>
+</tr>
+<tr class="even">
+<td align="right">0.8-1.00</td>
+<td align="left">0.00</td>
+<td align="center">NaN</td>
+<td align="center">68.00</td>
+<td align="center">0.00</td>
+<td align="center">100.00</td>
+<td align="center">-475.48</td>
+<td align="center">65.79</td>
+<td align="left">-6.45</td>
+<td align="left">96.33</td>
+</tr>
+<tr class="odd">
+<td align="right">0.85-1.00</td>
+<td align="left">0.00</td>
+<td align="center">NaN</td>
+<td align="center">68.00</td>
+<td align="center">0.00</td>
+<td align="center">100.00</td>
+<td align="center">-196.63</td>
+<td align="center">66.37</td>
+<td align="left">-4.34</td>
+<td align="left">96.92</td>
+</tr>
+<tr class="even">
+<td align="right">0.9-1.00</td>
+<td align="left">0.00</td>
+<td align="center">NaN</td>
+<td align="center">68.00</td>
+<td align="center">0.00</td>
+<td align="center">100.00</td>
+<td align="center">-89.79</td>
+<td align="center">66.93</td>
+<td align="left">-2.44</td>
+<td align="left">97.57</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</div>
+<div id="frequency-distribution-of-model-based-predicted-risks-among-converters-and-nonconverters-in-sample" class="section level3">
+<h3>Frequency Distribution of Model-Based Predicted Risks Among Converters and Nonconverters (in sample)</h3>
+<p><img src="model_files/figure-html/barplot-1.png" width="816" /></p>
+</div>
+<div id="roc-curves" class="section level3">
+<h3>ROC Curves</h3>
+<p><img src="model_files/figure-html/roc1-1.png" width="480" /></p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

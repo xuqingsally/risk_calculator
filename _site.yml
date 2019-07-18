@@ -1,0 +1,18 @@
+name: "Risk Calculator"
+output_dir: "."
+navbar:
+  title: "Home"
+  right:
+    - text: "Data"
+      href: data.html
+    - text: "Model"
+      href: model.html
+    - icon: fa-envelope fa-lg
+      href: mailto:<qx2178@cumc.columbia.edu>
+    - icon: fa-github fa-lg
+      href: https://github.com/xuqingsally
+output:
+  html_document:
+    theme: flatly
+
+
