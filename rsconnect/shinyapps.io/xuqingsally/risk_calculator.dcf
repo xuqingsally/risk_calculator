@@ -1,0 +1,12 @@
+name: risk_calculator
+title: risk_calculator
+username:
+account: xuqingsally
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1042072
+bundleId: 2248323
+url: https://xuqingsally.shinyapps.io/risk_calculator/
+when: 1563565940.1324
+asMultiple: FALSE
+asStatic: FALSE
