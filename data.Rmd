@@ -4,6 +4,8 @@ output:
   html_document:
     toc: true
     toc_float: true
+editor_options: 
+  chunk_output_type: console
 ---
 <br>
 [[Data Variables' Description ]{style="float:right"}](./variable_name.pdf) 
@@ -267,8 +269,9 @@ whole_tab2 <- cbind(c("",rownames(print_t_all)), whole_tab1)
 rownames(whole_tab2) <- NULL
 colnames(whole_tab2) <- c("Variables", names(whole_tab))
 
+
 # give full variable names
-names_dat <- read.csv("./data/full_var_names.csv")
+names_dat <- read.csv("./data/full_var_names_order.csv")[-1,]
 full_var_name <- c("", as.character(names_dat[,2]))
 range_vals <- c("", as.character(names_dat[,3]))
 

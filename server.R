@@ -38,7 +38,7 @@ shinyServer(function(input, output){
                        as.numeric(input$G2) * (-0.14) +
                        as.numeric(input$G3) * 0.04 +
                        as.numeric(input$GAF) * (-0.02) +
-                       as.numeric(input$P1PD) * 0.02
+                       as.numeric(input$P1PD) * 0.02 - 1.65
                    ))
     prob = 1/(1+1/odds)
 
