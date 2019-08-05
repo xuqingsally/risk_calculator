@@ -4,6 +4,8 @@ output:
   html_document:
     toc: true
     toc_float: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ***
@@ -346,11 +348,13 @@ for(k in 1:100) {
 # Fit lasso logistic model on sample; select vars; refit using glm
 ###################################################################
 set.seed(120616)
-cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[1]])
+#cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[4]])
+cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[4]])
 plot(cv_info_l)
 summary(cv_info_l)
 fit_l <- glmnet(x = knn_X_cont, y = Y, family = "binomial")
 plot(fit_l)
+
 
 # get non-zero coefficients - identify relevant variables
 coefs_l <- coef(fit_l, s = cv_info_l$lambda.min)
@@ -503,7 +507,7 @@ c_info_lasso[rev(order(abs(c_info_lasso[,2]))),]
 # selected
 # c_info_lasso[rev(order(abs(c_info_lasso[,2]))),][1:17,]
 sel_tab <- c_info_lasso[rev(order(abs(c_info_lasso[,2]))),][1:17,]
-knitr::kable(round(sel_tab,2))
+knitr::kable(round(sel_tab,2),format = "markdown")
 ```
 
 * Un-Selected Variables
@@ -511,7 +515,7 @@ knitr::kable(round(sel_tab,2))
 # not selected
 unsel <- c_info_lasso[rev(order(abs(c_info_lasso[,2]))),][18:41,]
 # unsel[rev(order(unsel[,3])),]
-knitr::kable(round(unsel[rev(order(unsel[,3])),]))
+knitr::kable(round(unsel[rev(order(unsel[,3])),]), format = 'markdown')
 ```
 
 ### In Sample and Optimism Adjusted Performance
@@ -575,7 +579,7 @@ app_m_opt_calc[,2] <- (app_m_opt[,4]*0.32) / (app_m_opt[,4]*0.32 + (1 - app_m_op
 app_m_opt_calc[,3] <- (app_m_opt[,5]*(1 - 0.32)) / (app_m_opt[,5]*(1 - 0.32) + (1 - app_m_opt[,4])*0.32) # calculated opt. adj. NPV
 perf_tab <- cbind(100*round(sens_spec_tab_l, 4)[-c(1,20),], 100*round(app_m_opt_calc[,2:5],4))
 
-knitr::kable(perf_tab)
+knitr::kable(perf_tab, format = 'markdown')
 ```
 
 ### Frequency Distribution of Model-Based Predicted Risks Among Converters and Nonconverters (in sample)
