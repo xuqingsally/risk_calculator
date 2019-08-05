@@ -67,7 +67,7 @@ fluidRow(
   ,
       sliderInput("GAF", "Global Assessment of Functioning",min = 0, max = 100, step = 1, value = 0)
   ,  
-      sliderInput("GFS..Social", "Social social functioning",min = 0, max = 7, step = 1, value = 0)
+      sliderInput("GFS..Social", "Social Functioning",min = 0, max = 7, step = 1, value = 0)
   
   ),
   
