@@ -6,7 +6,7 @@ navbar:
     - text: "Data"
       href: data.html
     - text: "Model"
-      href: model.html
+      href: model_new.html
     - icon: fa-envelope fa-lg
       href: mailto:<qx2178@cumc.columbia.edu>
     - icon: fa-github fa-lg
