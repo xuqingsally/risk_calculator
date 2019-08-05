@@ -7,7 +7,7 @@ navbar:
     - text: "Data"
       href: data.html
     - text: "Model"
-      href: model.html
+      href: model_new.html
     - icon: fa-envelope fa-lg
       href: mailto:<qx2178@cumc.columbia.edu>
     - icon: fa-github fa-lg
@@ -24,3 +24,5 @@ output:
 <br>
 
 ## [Psychosis Conversion Risk Calculator](https://xuqingsally.shinyapps.io/risk_calculator/)
+
+#### Reference : [A predictive model for conversion to psychosis in clinical high-risk patients](https://www.cambridge.org/core/journals/psychological-medicine/article/predictive-model-for-conversion-to-psychosis-in-clinical-highrisk-patients/C5E4C0022112C4EA619C2A8F0A826E72).

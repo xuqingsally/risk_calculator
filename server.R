@@ -25,20 +25,23 @@ shinyServer(function(input, output){
   output$result <- renderTable({
     # Executes the "inputdata" function to save the dataframe as "data"
    # data = inputdata()
-    odds = (exp(1)^(  as.numeric(input$Idea_Sev_Base) * 0.51 +
-                       as.numeric(input$Behav_Sev_Base) * 0.62 +
-                       as.numeric(input$SI_Base) * 0.02 +
-                      as.numeric(input$race_bin) * 0.38 +
-                      as.numeric(input$P4v) * (-0.25) +
-                       as.numeric(input$P1) * 0.25 +
-                       as.numeric(input$P5) * 0.16 +
-                       as.numeric(input$N1) * 0.12 +
+    odds = (exp(1)^(  as.numeric(input$Idea_Sev_Base) * 0.57 +
+                       as.numeric(input$Behav_Sev_Base) * 0.82 +
+                       as.numeric(input$SI_Base) * 0.17 +
+                      as.numeric(input$race_bin) * 0.49 +
+                      as.numeric(input$P4v) * (-0.3) +
+                       as.numeric(input$P1) * 0.28 +
+                       as.numeric(input$P5) * 0.20 +
+                       as.numeric(input$N1) * 0.14 +
                        as.numeric(input$N5) * 0.02 +
                        as.numeric(input$D3) * 0.02 +
-                       as.numeric(input$G2) * (-0.14) +
-                       as.numeric(input$G3) * 0.04 +
-                       as.numeric(input$GAF) * (-0.02) +
-                       as.numeric(input$P1PD) * 0.02 - 1.65
+                       as.numeric(input$G2) * (-0.18) +
+                       as.numeric(input$G3) * 0.05 +
+                       as.numeric(input$GAF) * (-0.03) +
+                       as.numeric(input$P1PD) * 0.08 +
+                       as.numeric(input$SB_Base) * 0.09 +
+                       as.numeric(input$Trauma_Sexual) * 0.11 +
+                       as.numeric(input$GFS..Social) * 0.02 - 1.65
                    ))
     prob = 1/(1+1/odds)
 

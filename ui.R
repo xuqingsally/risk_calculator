@@ -7,14 +7,42 @@ shinyUI(fluidPage(
 fluidRow(
   column(4,
       # Input: select list input
-      selectInput("Idea_Sev_Base","Baseline Violent Ideation", choices = list("NO" = 0, "Yes" = 1), selected = 0)
-  ,
-      selectInput("Behav_Sev_Base", "Baseline Violent Behavior", choices = list("NO" = 0, "YES" = 1), selected = 0)
-  ,
-      selectInput("SI_Base", "Baseline Suicidal Ideation", choices = list("NO" = 0, "YES" = 1), selected = 0)
-  ,      
-      selectInput("race_bin", "Race", choices = list("C" = 0, "Non C" = 1), selected = 0)
-  ),
+      radioButtons(
+        "Idea_Sev_Base", 
+        "Baseline Violent Ideation",
+        c("NO" = 0, "YES" = 1), 
+        inline = TRUE
+      ),
+      radioButtons(
+        "Behav_Sev_Base", 
+        "Baseline Violent Behavior",
+        c("NO" = 0, "YES" = 1), 
+        inline = TRUE
+      ),
+      radioButtons(
+        "SI_Base", 
+        "Baseline Suicidal Ideation",
+        c("NO" = 0, "YES" = 1), 
+        inline = TRUE
+      ),
+      radioButtons(
+        "SB_Base", 
+        "Baseline Suicidal Behavior",
+        c("NO" = 0, "YES" = 1), 
+        inline = TRUE
+      ),
+      radioButtons(
+        "race_bin", 
+        "Race",
+        c("C" = 0, "Non C" = 1), 
+        inline = TRUE
+      ),
+      radioButtons(
+        "Trauma_Sexual", 
+        "Baseline History of Sexual Trauma",
+        c("NO" = 0, "YES" = 1), 
+        inline = TRUE
+      )),
   
   column(4,
       selectInput("P4v", "Visual Hallucinations", choices = c("0", "1", "2", "3", "4", "5", "6"))
@@ -35,10 +63,12 @@ fluidRow(
   ,
       selectInput("G3", "Motor Disturbance", choices = c("0", "1", "2", "3", "4", "5", "6"))
   ,
-      selectInput("GAF", "Global Assessment of Functioning", choices = c("0", "1", "2", "3", "4", "5", "6"))
+      selectInput("P1PD", "P1 Subsymptom Perplexity and Delusional Mood", choices = c("0", "1", "2", "3", "4", "5"))
   ,
-      selectInput("P1PD", "P1 Subsymptom Perplexity and Delusional Mood", choices = c("0", "1", "2", "3", "4", "5", "6"))
-
+      sliderInput("GAF", "Global Assessment of Functioning",min = 0, max = 100, step = 1, value = 0)
+  ,  
+      sliderInput("GFS..Social", "Social social functioning",min = 0, max = 7, step = 1, value = 0)
+  
   ),
   
   column(3,

@@ -1,0 +1,619 @@
+---
+title: "Prediction Model of Psychosis Conversion Data"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+***
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mi)
+library(tableone)
+library(pander)
+library(VIM)
+library(glmnet)
+library(pROC)
+library(caTools)
+
+# original data set from Ragy
+pc_dat <- read.csv("./data/Database Risk Calculator (111616).csv")
+names(pc_dat)
+
+# per Ragy's suggestion change obs 756 and 794 G1 value to NA
+# also have to change their G.Totals to NA
+which(pc_dat$ID == 756)
+which(pc_dat$ID == 794)
+pc_dat[c(156,194),36] <- NA
+pc_dat[c(156,194),40] <- NA
+
+# also have 2 obs with Female = 3 - changing to NA
+pc_dat[which(pc_dat$Female == 3),14] <- NA
+
+# Change conversion status based on "Sample_Info_092017_Ragy" document
+pc_dat$Conversion[pc_dat$ID == 607] <- 1
+pc_dat$Conversion[pc_dat$ID == 618] <- 1
+pc_dat$Conversion[pc_dat$ID == 620] <- 1
+pc_dat$Conversion[pc_dat$ID == 767] <- 1
+pc_dat$Conversion[pc_dat$ID == 778] <- 1 
+pc_dat$Conversion[pc_dat$ID == 793] <- 1
+pc_dat$Conversion[pc_dat$ID == 800] <- 1
+pc_dat$Conversion[pc_dat$ID == 811] <- 1 
+
+# above adjustments are included in the d198 data set below
+# analysis data set - see file "Data Setup 083117.R"
+load("./data/d199_092117.Rdata")
+pc_dat3 <- d199 # renamed to recycle old code
+
+
+## Descriptive Information
+### Original Data Set
+
+# original data set
+dim(pc_dat)
+data.frame(names(pc_dat))
+summary(pc_dat)
+pc_dat_miss <- missing_data.frame(pc_dat)
+
+ #Data set has 215 observations with 48 variables
+ #Of the 48 variables, 5 are sums of subscores
+#     + 12 binary, 1 4-level categorical, 7 continuous, 28 cont/discrete
+# Full data missingess:
+
+# assess overall missingness
+image(pc_dat_miss, grayscale = F)
+# show(pc_dat_miss)
+
+# In the original data set, only 113 with complete data on all 48 variables.
+# Of the 215, 4 are missing conversion status - these subjects are dropped from subsequent analysis.
+# Of the 211 remaining, 12 are missing most/all SIPS variables (N, P, D, G vars - will drop these subjects from subsequent analyses).
+# Have removed 16/215 = 7.4% of the data.
+
+# how many complete cases
+cc <- complete.cases(pc_dat)
+sum(cc)
+
+# how many with conversion status
+summary(pc_dat$Conversion)
+Y_av <- !is.na(pc_dat$Conversion)
+sum(is.na(pc_dat$Conversion))
+
+# IDs missing conversion status
+id_missY <- pc_dat$ID[!Y_av]
+
+# remove those missing conversion status (7 obs)
+pc_dat2 <- pc_dat[Y_av,]
+
+# SIPS variable assessment
+# base vars 2:11
+# P vars 16:23
+# N vars 24:30
+# D vars 31:35
+# G vars 36:40
+ns_av <- !is.na(pc_dat2[,24]) # using N1 since those missing N1 are missing all/most others
+sum(is.na(pc_dat2[,24]))
+id_missSIDS <- pc_dat2$ID[!ns_av]
+
+# IDs of those with missing values who were removed (n = 17)
+gone <- c(id_missY,id_missSIDS)
+
+# pc_dat3 is the data set with 198 subjects.
+pc_dat_miss3 <- missing_data.frame(pc_dat3)
+
+
+### Analysis Data Set
+# For the set of 199 subjects to be analyzed, missingness looks like:
+
+# analysis data set
+image(pc_dat_miss3, grayscale = F)
+
+
+#### Missingness per subject:
+
+# Number of variables missing and proportion of sample with that many missing:
+
+# analysis data set
+# characterize missingness in the n = 199 remaining
+# how many vars missing per obs
+na_sum <- function(x) sum(is.na(x))
+miss_tab <- round(table(apply(pc_dat3, 1, na_sum)) / dim(pc_dat3)[1], 3)
+miss_tab
+
+# total % of missing data (inlcuding conversion status)
+sum(apply(pc_dat3, 1, na_sum)) / (48*199)
+
+# Cummulative proportion missing x or less
+
+cumsum(miss_tab)
+   
+
+###### page break
+#### Missingness per variable:
+
+data.frame(count = apply(pc_dat3, 2, na_sum), 
+           prop = round(apply(pc_dat3, 2, na_sum)/dim(pc_dat3)[1],3))
+
+###### page break
+## Descriptives and marginal compsrisons between converters and non-converters
+
+# Numbers of converters and non-converters:
+
+table(pc_dat3$Conversion)
+
+
+###################################################
+# Summary of data used in analysis - complete info
+###################################################
+
+# continuous variables c(13,16:49)
+sm_summary_cont <- function(x) {
+	out <- c(round(mean(x, na.rm = T),2), round(sd(x, na.rm = T),2), sum(!is.na(x)))
+	return(out)
+}
+df_cont <- data.frame(t(apply(pc_dat3[,c(13,16:49)],2, sm_summary_cont)))
+names(df_cont) <- c("mean", "sd", "n_obs")
+
+# par(mfrow = c(6,6))
+# for(j in 16:49) hist(pc_dat3[,j], main = names(pc_dat3)[j])
+
+# binary variables c(2:7,9:12,14:15)
+sm_summary_bin <- function(x) {
+	out <- c(table(x)[2],round(table(x)[2]/sum(table(x)),2), sum(!is.na(x)))
+	return(out)
+}
+df_bin <- data.frame(t(apply(pc_dat3[,c(2:7,9:12,14:15)],2, sm_summary_bin)))
+names(df_bin) <- c("freq", "prop", "n_obs")
+
+# race (4-category)
+table(pc_dat3[,8])
+round(table(pc_dat3[,8])/sum(table(pc_dat3[,8])),2)
+sum(!is.na(pc_dat3[,8]))
+
+#######################################################
+# Marginal Associations with Conversion - complete info
+########################################################
+# marginal associations of continuous vars with conversion
+marg_cont <- function(x) {
+	t_info <- t.test(x ~ factor(pc_dat3[,15], levels = c(1,0)), var.equal = T)
+	ts <- t_info$statistic
+	n1 <- sum(!is.na(x[pc_dat3[,15] == 1]))
+	n2 <- sum(!is.na(x[pc_dat3[,15] == 0]))
+	cohens_d <- ts*sqrt(1/n1 + 1/n2)
+	df <- t_info$parameter
+	no_conv <- t_info$estimate[2]
+	conv <- t_info$estimate[1]
+	pval <- t_info$p.value
+	min_x <- min(x, na.rm = TRUE)
+	max_x <- max(x, na.rm = TRUE)
+	out <- c(no_conv, conv, ts, df, pval, n1, n2, cohens_d, min_x, max_x)
+	return(out)
+}
+comp_conv_cont <- data.frame(t(round(apply(pc_dat3[,c(13,16:49)],2,marg_cont),2)))
+names(comp_conv_cont) <- c("no_conv","conv","t","df","p", "n1", "n2", "d", "min", "max")
+
+# marginal associations of binary vars with conversion
+marg_bin <- function(x) {
+	fish_info <- fisher.test(table(x,pc_dat3[,15]))
+	chisq_info <- chisq.test(table(x,pc_dat3[,15]))
+	chisq_stat <- chisq_info$statistic
+	no_conv <- mean(x[pc_dat3[,15] == 0], na.rm = T)
+	conv <- mean(x[pc_dat3[,15] == 1], na.rm = T)
+	n_obs <- sum(table(x,pc_dat3[,15]))
+	OR <- (conv/(1-conv)) / (no_conv/(1-no_conv))
+	pval <- fish_info$p.value
+	out <- c(no_conv, conv, OR, n_obs, pval, chisq_stat)
+	return(out)
+}
+comp_conv_bin <- data.frame(t(round(apply(pc_dat3[,c(2:7,9:12,14)],2,marg_bin),2)))
+names(comp_conv_bin) <- c("no_conv","conv","OR","n_obs","p", "chisq_stat")
+
+# marginal associations of race (4-level) with conversion
+fisher.test(table(pc_dat3[,8],pc_dat3[,15]))
+race_tab <- table(pc_dat3[,8],pc_dat3[,15])
+divby <- function(x) {
+	x_mat <- as.matrix(x)
+	c_tot <- apply(x_mat, 2, sum) 
+	props <- round(cbind(x_mat[,1]/c_tot[1], x_mat[,2]/c_tot[2]),2)
+	return(props)
+}
+r_tab <- divby(race_tab)
+colnames(r_tab) <- c("no_conv","conv")
+rownames(r_tab) <- c("AA","C","As","Oth")
+sum(race_tab)
+
+####################################################
+
+# use tableone package
+varnames <- names(pc_dat3)[c(13,16:49,2:12,14)]
+factor_vars <- names(pc_dat3)[c(2:12,14)]
+
+# overall
+t_all <- CreateTableOne(vars = varnames, factorVars = factor_vars, data = pc_dat3)
+n_obs0 <- c(199 - t_all$ContTable$Overall[,2], unlist(lapply(t_all$CatTable$Overall, function(x) x[1,1] - x[1,2])))
+n_obs <- c(n_obs0[1:42], rep("",4), n_obs0[43:47])
+
+print_t_all0 <- print(t_all)
+print_t_all <- cbind(n_obs, print_t_all0[-1,])
+rownames(print_t_all)[42] <- "Race (4 Category)"
+rownames(print_t_all)[43] <- "Afr. Am."
+rownames(print_t_all)[44] <- "Cauc."
+rownames(print_t_all)[45] <- "Asian"
+rownames(print_t_all)[46] <- "Other"
+rownames(print_t_all)[47] <- "Race (Binary)"
+rownames(print_t_all)[48] <- "Schizotypal"
+rownames(print_t_all)[49] <- "GRDS"
+rownames(print_t_all)[50] <- "Family History"
+
+# by conversion status
+t_conv <- CreateTableOne(vars = varnames, strata = c("Conversion"), factorVars = factor_vars, data = pc_dat3)
+print_t_conv <- print(t_conv)
+# get test stats - from previous code
+test_stats <- c(comp_conv_cont[,3], rep("",16))
+
+# whole table
+whole_tab0 <- cbind(print_t_all, print_t_conv[-1,1:2], test_stats, print_t_conv[-1,3])
+whole_tab1 <- rbind(c("", "(n = 199)", "(n = 135)", "(n = 64)", "", ""), whole_tab0)
+whole_tab <- data.frame(whole_tab1)
+names(whole_tab) <- c("n Obs.", "Full", "Nonconv", "Conv", "Stat.", "p")
+whole_tab2 <- cbind(c("",rownames(print_t_all)), whole_tab1)
+rownames(whole_tab2) <- NULL
+colnames(whole_tab2) <- c("Variables", names(whole_tab))
+
+# give full variable names
+names_dat <- read.csv("./data/full_var_names.csv")
+full_var_name <- c("", as.character(names_dat[,2]))
+range_vals <- c("", as.character(names_dat[,3]))
+
+# augment table
+whole_tab3 <- cbind(whole_tab2[,1], full_var_name, whole_tab2[,2], range_vals, whole_tab2[,3:7])
+colnames(whole_tab3) <- c("Variables", "Variable Names", "N", "Range", "Full", "Non-Converter", "Converter", "Stat", "p") 
+
+
+# Mean (sd) reported for each continous variable and n (%) for each categorical variable.  t-tests used to compare converters and non-converters on continuous measures and Fisher's exact test used for categorical measures. 
+
+# could rerun this table in separate file using landscape word template
+set.alignment(c("left", rep("center",6)))
+# pandoc.table(whole_tab2, split.cells = c(8,1,10,10,10,1,1), style = "simple")
+#pandoc.table(whole_tab2, split.cells = c(8,1,10,10,10,1,1), style = "grid")
+#knitr::kable(whole_tab2)
+knitr::kable(whole_tab3)
+
+
+###### page break
+# Below table shows similar info with Cohen's d calculated for each continuous measure
+#     + Note it's computed as nonconverter - converter (take opposite for paper)
+
+comp_conv_cont
+
+###### page break
+## Setting Up Complete Data for Modelling
+# For constructing the the predictive model we consider all covariates from the descriptive table except:
+#     + we remove the 4 category race variable (leave in the binary one)
+#     + we remove total scores (Ptot, N.Total, D.Total, G.Total and SIPS.Total) since we include the components of each
+# We employ K Nearest Neighbors (kNN) Imputaion (k = 5) using the VIM package (kNN function) in R to ``fill in'' missing data, which handles both continuous and categorical variables. (A. Kowarik, M. Templ (2016) Imputation with R package VIM. Journal of Statistical Software, 74(7), 1-16.)
+
+# remove, ID, 4-category race, and totals
+d198_red <- d199[,-c(1,8,23,30,35,40,41)] # called d198_red as hold over from previous analysis
+d198_red$Conversion <- factor(ifelse(d198_red$Conversion == 1, "conv", "no_conv"))
+
+# kNN Imputation
+knn_d198_red_all <- kNN(d198_red)
+knn_d198_red <- knn_d198_red_all[,1:42]
+knn_d198_red_imp_ind <- knn_d198_red_all[,43:84] # idicates if value is imputed
+
+# outcome
+Y <- 1*(knn_d198_red[,13] == "conv") 
+
+# consider subscales as continuous/ordinal - not standardized
+# matrix of covariates - (13th col is conversion status)
+knn_X_cont <- as.matrix(knn_d198_red[,c(1:12,14:42)])
+summary(knn_X_cont)
+
+# set up multiple fold-id settings for repreated CV - keeps the same conv/nonconv rate in each split
+fid_list <- list()
+for(k in 1:100) {
+	set.seed(1234*k)
+	case_spl <- split(sample(which(Y == 1)), f = c(rep(1:4, each = 13), rep(5, 12)))
+	cont_spl <- split(sample(which(Y == 0)), f = rep(1:5, each = 27))
+	spl <- mapply(c, case_spl, cont_spl)
+	fids <- rep(NA, length(Y))
+	for(j in 1:5) fids[spl[[j]]] <- j
+	fid_list[[k]] <- fids 
+}
+
+# check to see that conv/nonconv rate in each split for a given split set
+# for(j in 1:5) print(table(Y[fid_list[[82]] == j]))
+```
+
+
+
+
+
+```{r, include = FALSE}
+###########################
+#This HTML start from here#
+###########################
+```
+
+* We used logistic regression with main effects only for each covariate and the outcome is conversion to psychosis.
+* Subscales were included assuming a linear relationship with the logit.
+* A lasso penalized fitting procedure was used to perform variable selection and estimation of the model.  5-fold cross validation (folds constructed to reflect the ~30% case rate in the sample) was used to determine the penalization parameter.  This was carried out using functions from the R package glmnet.  
+* Validation of the model is based on bootstrapping the performacne measures (AUC, Breir Score) - using procedure outlined in Harrell 1996 Stat in Medicine Vol 15 361 - 387 (Tutorial in Biostatistics: Multivariate Prog. Models: Issues...)
+```{r mod2, include = FALSE}
+###################################################################
+# Fit lasso logistic model on sample; select vars; refit using glm
+###################################################################
+set.seed(120616)
+#cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[4]])
+cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[4]])
+plot(cv_info_l)
+summary(cv_info_l)
+fit_l <- glmnet(x = knn_X_cont, y = Y, family = "binomial")
+plot(fit_l)
+
+
+# get non-zero coefficients - identify relevant variables
+coefs_l <- coef(fit_l, s = cv_info_l$lambda.min)
+nz_coef_l <- coefs_l[which(coefs_l != 0),][-1] # no intercept
+data.frame(round(nz_coef_l,3))
+
+# standardized - can use same lambda since lambda selected when variables are standardized
+knn_X_contS <- scale(knn_X_cont)
+fit_lS <- glmnet(x = knn_X_contS, y = Y, family = "binomial")
+
+# get non-zero coefficients - identify relevant variables
+coefs_lS <- coef(fit_lS, s = cv_info_l$lambda.min)
+nz_coef_lS <- coefs_lS[which(coefs_lS != 0),][-1] # no intercept
+data.frame(round(nz_coef_lS,3))
+
+# unstandardized and standardized together - ordered by standardized beta magnitude
+data.frame(Beta_Un = round(nz_coef_l,3), Beta_Std = round(nz_coef_lS,3))[rev(order(abs(round(nz_coef_lS,3)))),]
+
+# obtain predictions in sample - AUC, Brier, Calibration Slope
+pred_l0 <- predict(fit_l, newx = knn_X_cont, s = cv_info_l$lambda.min, type = "response")
+roc_l0 <- roc(Y, pred_l0)
+plot(roc_l0)
+brier_l0 <- as.numeric(t(Y - pred_l0)%*%(Y - pred_l0)) / length(Y)
+pred_l0link <- predict(fit_l, newx = knn_X_cont, s = cv_info_l$lambda.min, type = "link")
+cal_slope0 <- coef(glm(Y ~ pred_l0link, family = binomial))[2] # large but not surprising
+```
+
+```{r bootstrapping, include = FALSE}
+############################################
+# Bootstrap internal validation
+############################################
+lb_l <- lb_l0 <- seq(0,0.95, by = 0.05)
+ub_l <- ub_l0 <- seq(0.04,0.99, by = 0.05)
+# # function to generate stratified bootstrap sample
+# bs_gen <- function(orig_dat) {
+# 	case <- which(orig_dat$Y == 1)
+# 	cont <- which(orig_dat$Y == 0)
+# 	bs_samp_row <- c(sample(case, replace = TRUE), sample(cont, replace = TRUE))
+# 	bs_samp <- orig_dat[bs_samp_row,]		
+# 	return(bs_samp) 
+# }
+# # using the orginal lasso model - either use CV deviance or auc 
+# B <- 1000
+# orig_dat <- data.frame(Y,knn_X_cont)
+# Y_orig <- orig_dat$Y
+# X_orig <- as.matrix(orig_dat[,2:dim(orig_dat)[2]])
+# coefs_bs_all <- roc_bs <- roc_orig <- brier_bs <- brier_orig <- y_pred_bs <- y_pred_orig <- list()
+# sens_spec_tab_list_bs <- sens_spec_tab_list_orig <- list()
+# ub_l <- seq(0.05,1, by = 0.05)
+# set.seed(12062016)
+# for(b in 1:B) {
+# 	bs_samp <- bs_gen(orig_dat)
+# 	Y_bs <- bs_samp$Y
+# 	X_bs <- as.matrix(bs_samp[,2:dim(bs_samp)[2]])
+# 	# obtain fit on bs_samp
+# 	case_spl <- split(sample(which(Y_bs == 1)), f = c(rep(1:4, each = 13), rep(5, 12)))
+# 	cont_spl <- split(sample(which(Y_bs == 0)), f = rep(1:5, each = 27))
+# 	spl <- mapply(c,case_spl, cont_spl)
+# 	fids <- rep(NA, length(Y))
+# 	for(j in 1:5) fids[spl[[j]]] <- j
+# 	# check for(j in 1:5) print(table(Y_bs[fids == j]))
+# 	# cv_info_bs <- cv.glmnet(x = X_bs, y = Y_bs, family = "binomial", foldid = fids)
+# 	cv_info_bs <- cv.glmnet(x = X_bs, y = Y_bs, family = "binomial", foldid = fids, type.measure = "auc")
+# 	fit_bs <- glmnet(x = X_bs, y = Y_bs, family = "binomial")
+# 	coefs_bs_all[[b]] <- coefs_bs <- coef(fit_bs, s = cv_info_bs$lambda.min)
+# 	
+# 	# obtain predictions in sample and test - AUC and Brier
+# 	pred_bs <- predict(fit_bs, newx = X_bs, s = cv_info_bs$lambda.min, type = "response")
+# 	pred_orig <- predict(fit_bs, newx = X_orig, s = cv_info_bs$lambda.min, type = "response")
+# 	y_pred_bs[[b]] <- cbind(Y_bs, pred_bs)
+# 	y_pred_orig[[b]] <- cbind(Y_orig, pred_orig)
+# 	roc_bs[[b]] <- roc(Y_bs, as.numeric(pred_bs))
+# 	roc_orig[[b]] <- roc(Y_orig, as.numeric(pred_orig))
+# 	brier_bs[[b]] <- as.numeric(t(Y_bs - pred_bs)%*%(Y_bs - pred_bs)) / length(Y_bs)
+# 	brier_orig[[b]] <- as.numeric(t(Y_orig - pred_orig)%*%(Y_orig - pred_orig)) / length(Y_orig)
+# 	
+# 	pred_cat_bs <- cut(pred_bs, breaks = c(0,ub_l))
+# 	pred_cat_orig <- cut(pred_orig, breaks = c(0,ub_l))
+# 	num_risk_class_bs <- as.numeric(pred_cat_bs)
+# 	num_risk_class_orig <- as.numeric(pred_cat_orig)
+#  
+# 	sens_spec_tab_bs <- sens_spec_tab_orig <- matrix(NA, nrow = 20, ncol = 5)
+# 	for(a in 1:20) {
+# 		# taking 0.32 as the fixed propotion of converters
+# 		sens_spec_tab_bs[a,1] <- sum(num_risk_class_bs >= a) / length(num_risk_class_bs) # base rate
+# 		sens_spec_tab_bs[a,4] <- sum(num_risk_class_bs >= a & Y_bs == 1) / sum(Y_bs) # sens
+# 		sens_spec_tab_bs[a,5] <- sum(num_risk_class_bs < a & Y_bs == 0) / sum(Y_bs == 0) # spec
+# 		sens_spec_tab_bs[a,2] <- (sens_spec_tab_bs[a,4]*0.32) / (sens_spec_tab_bs[a,4]*0.32 + (1 - sens_spec_tab_bs[a,5])*(1 - 0.32)) # PPV
+# 		sens_spec_tab_bs[a,3] <- (sens_spec_tab_bs[a,5]*(1 - 0.32)) / (sens_spec_tab_bs[a,5]*(1 - 0.32) + (1 - sens_spec_tab_bs[a,4])*0.32) # NPV
+# 
+# 		sens_spec_tab_orig[a,1] <- sum(num_risk_class_orig >= a) / length(num_risk_class_orig) # base rate
+# 		sens_spec_tab_orig[a,4] <- sum(num_risk_class_orig >= a & Y_orig == 1) / sum(Y_orig) # sens
+# 		sens_spec_tab_orig[a,5] <- sum(num_risk_class_orig < a & Y_orig == 0) / sum(Y_orig == 0) # spec
+# 		sens_spec_tab_orig[a,2] <- (sens_spec_tab_orig[a,4]*0.32) / (sens_spec_tab_orig[a,4]*0.32 + (1 - sens_spec_tab_orig[a,5])*(1 - 0.32)) # PPV
+# 		sens_spec_tab_orig[a,3] <- (sens_spec_tab_orig[a,5]*(1 - 0.32)) / (sens_spec_tab_orig[a,5]*(1 - 0.32) + (1 - sens_spec_tab_orig[a,4])*0.32) # NPV
+# 	}
+# 	rownames(sens_spec_tab_bs) <- rownames(sens_spec_tab_orig) <- paste(lb_l,"-1.00", sep = "")
+# 	colnames(sens_spec_tab_bs) <- c("Base Rate in Sample", "PPV", "NPV", "Sensitivity", "Specificity")
+# 	colnames(sens_spec_tab_orig) <- c("Base Rate in Sample", "PPV", "NPV", "Sensitivity", "Specificity")
+# 
+# 	sens_spec_tab_list_bs[[b]] <- sens_spec_tab_bs
+# 	sens_spec_tab_list_orig[[b]] <- sens_spec_tab_orig
+# 	
+# 	print(paste("BS sample ",b," done.", sep = ""))
+# }
+# bs_out <- list(roc_bs = roc_bs, roc_orig = roc_orig, brier_bs = brier_bs, brier_orig = brier_orig,
+#                y_pred_bs = y_pred_bs, y_pred_orig = y_pred_orig, coefs_bs_all = coefs_bs_all,
+#                sens_spec_tab_list_bs = sens_spec_tab_list_bs, sens_spec_tab_list_orig = sens_spec_tab_list_orig)
+# save(bs_out, file = "/Volumes/Passport2TB/Psychosis_Conv/Code/bs_out_lasso_auc_updated_101817.Rdata")
+
+load("./data/bs_out_lasso_auc_updated_101817.Rdata")
+
+# variable selection
+bs_coefs <- matrix(NA, nrow = 42, ncol = 1000)
+for(b in 1:1000) bs_coefs[,b] <- bs_out$coefs_bs_all[[b]][,1]
+rownames(bs_coefs) <- rownames(bs_out$coefs_bs_all[[1]])
+bs_coefs_sel <- (bs_coefs != 0)
+bs_sel_prop <- sort(apply(bs_coefs_sel, 1, function(x) mean(x)))
+bs_sel_prop_unsort <- apply(bs_coefs_sel, 1, function(x) mean(x))
+# data.frame(bs_sel_prop)
+
+# apparent AUC - optimism
+auc_opts <- unlist(lapply(bs_out$roc_bs, function(x) x$auc)) - unlist(lapply(bs_out$roc_orig, function(x) x$auc))
+# roc_l$auc - mean(auc_opts)
+
+# apparent Brier - optimism
+brier_opts <- unlist(bs_out$brier_bs) - unlist(bs_out$brier_orig)
+# brier_l - mean(brier_opts)
+```
+
+
+```{r estcoef1, include = FALSE}
+#################################
+# Present model coefs
+#################################
+# lasso model
+c_info_lasso <- data.frame(Beta = round(coefs_l[-1],3), Std_Beta = round(coefs_lS[-1],3),
+                           Prop_Sel_BS = bs_sel_prop_unsort[-1])
+c_info_lasso[rev(order(abs(c_info_lasso[,2]))),]
+```
+
+### Model Coefficients
+* Tables show
+     + Beta = estimated coefficient for corresponding predictor (note that predictors are NOT standardized)
+     + Std_Beta = estimated coefficient for corresponding predictor when predictor is standardized (table is ordered by increasing magnitude of this Std_Beta)
+     + Prop_Sel_BS = proportion of times that the predictor was selected to remain in the model using the bootstrapping procedure
+
+* Selected Variables
+```{r estcoef2, echo = FALSE}
+# selected
+# c_info_lasso[rev(order(abs(c_info_lasso[,2]))),][1:17,]
+sel_tab <- c_info_lasso[rev(order(abs(c_info_lasso[,2]))),][1:17,]
+knitr::kable(round(sel_tab,2),format = "markdown")
+```
+
+* Un-Selected Variables
+```{r estcoef3, echo = FALSE}
+# not selected
+unsel <- c_info_lasso[rev(order(abs(c_info_lasso[,2]))),][18:41,]
+# unsel[rev(order(unsel[,3])),]
+knitr::kable(round(unsel[rev(order(unsel[,3])),]), format = 'markdown')
+```
+
+### In Sample and Optimism Adjusted Performance
+```{r perf1, echo = TRUE}
+# In Sample ROC
+roc_l0 
+# Optimism Adj ROC
+roc_l0$auc - mean(auc_opts)
+#
+#
+# In Sample Brier
+brier_l0
+# Optimism Adj Brier
+brier_l0 - mean(brier_opts)
+```
+
+```{r perf2, include = FALSE}
+# Apparent sens/spec table - lasso model 
+lb_l <- seq(0,0.95, by = 0.05)
+ub_l <- seq(0.05,1, by = 0.05)
+pred_cat_l <- cut(pred_l0, breaks = c(0,ub_l))
+num_risk_class_l <- as.numeric(pred_cat_l)
+sens_spec_tab_l <- matrix(NA, nrow = 20, ncol = 5)
+for(a in 1:20) {
+	sens_spec_tab_l[a,1] <- sum(num_risk_class_l >= a) / length(num_risk_class_l) # base rate
+	sens_spec_tab_l[a,4] <- sum(num_risk_class_l >= a & Y == 1) / sum(Y) # sens
+	sens_spec_tab_l[a,5] <- sum(num_risk_class_l < a & Y == 0) / sum(Y == 0) # spec
+	sens_spec_tab_l[a,2] <- (sens_spec_tab_l[a,4]*0.32) / (sens_spec_tab_l[a,4]*0.32 + (1 - sens_spec_tab_l[a,5])*(1 - 0.32)) # PPV
+	sens_spec_tab_l[a,3] <- (sens_spec_tab_l[a,5]*(1 - 0.32)) / (sens_spec_tab_l[a,5]*(1 - 0.32) + (1 - sens_spec_tab_l[a,4])*0.32) # NPV	
+}
+rownames(sens_spec_tab_l) <- paste(lb_l,"-1.00", sep = "")
+colnames(sens_spec_tab_l) <- c("Base Rate", "PPV", "NPV", "Sens", "Spec")
+round(sens_spec_tab_l, 2)
+
+# compute optimism for each 
+.opts_list_all <- lapply(1:1000, function(x) bs_out$sens_spec_tab_list_bs[[x]][-c(1,20),] - bs_out$sens_spec_tab_list_orig[[x]][-c(1,20),])
+bad <- which(unlist(lapply(.opts_list_all, function(x) sum(is.na(x)))) > 0)
+# remove .opts_list_all[bad]
+opt_tab <- Reduce("+", .opts_list_all[-bad]) / (1000 - length(bad)) # use optimism for PPV, NPV, Sens, Spec
+
+# apparent - optimism
+app_m_opt <- data.frame(Base_Rate_in_Sample = sens_spec_tab_l[-c(1,20),1],sens_spec_tab_l[-c(1,20),2:5] - opt_tab[,2:5])
+round(app_m_opt,2)
+
+spec_app_m_opt <- c(0,app_m_opt[,5],1)
+sens_app_m_opt <- c(1,app_m_opt[,4],0)
+trapz(spec_app_m_opt, sens_app_m_opt)
+plot(spec_app_m_opt, sens_app_m_opt, type = "l", lwd = 2, xlim = c(1,0))
+abline(a = 1, b = -1, col = "grey", lty = 2)
+
+```
+
+
+* Left column shows various categories/cut-offs (e.g., you classified as a converter if your predicted probability falls within the range x – 1.00) to determine conversion status.  The corresponding roc curves are provided.  The first set of PPV, NPV, Sensitivity, and Specificity values are based on the sample used to fit the model and are overly optimistic.  The second set of PPV, NPV, Sensitivity, and Specificity values use the same bootstrap procedure used above to compute corrected values.
+```{r perf3, echo = FALSE}
+# perf_tab <- cbind(round(sens_spec_tab_l, 2)[-c(1,20),], round(app_m_opt[,2:5],2))
+
+# makes more sense to use optimism adjusted sens and spec to calculate optimism adjusted PPV and NPV
+app_m_opt_calc <- app_m_opt
+app_m_opt_calc[,2] <- (app_m_opt[,4]*0.32) / (app_m_opt[,4]*0.32 + (1 - app_m_opt[,5])*(1 - 0.32)) # calculated opt. adj. PPV
+app_m_opt_calc[,3] <- (app_m_opt[,5]*(1 - 0.32)) / (app_m_opt[,5]*(1 - 0.32) + (1 - app_m_opt[,4])*0.32) # calculated opt. adj. NPV
+perf_tab <- cbind(100*round(sens_spec_tab_l, 4)[-c(1,20),], 100*round(app_m_opt_calc[,2:5],4))
+
+knitr::kable(perf_tab, format = 'markdown')
+```
+
+### Frequency Distribution of Model-Based Predicted Risks Among Converters and Nonconverters (in sample)
+```{r barplot, echo = FALSE, fig.width=8.5}
+# histogram of predicted probabilities for conversions - using lasso model
+# hist(pred_l0) # overall
+lb_l0 <- seq(0,0.95, by = 0.05)
+ub_l0 <- seq(0.04,0.99, by = 0.05)
+pred_cat_l0 <- cut(pred_l0, breaks = c(0,ub_l0))
+num_risk_class_l0 <- as.numeric(pred_cat_l0)
+# data.frame(pred_l0, pred_cat_l0)
+tab_l0 <- table(Y, pred_cat_l0)
+barplot(tab_l0, beside = TRUE, xlab = "Predicted Risk of Psychosis", ylab = "Observations in Sample",
+         legend = c("Nonconverters (n = 135)", "Converters (n = 64)"))
+```
+
+### ROC Curves
+```{r roc1, echo = FALSE, fig.width=5, fig.height = 5}
+#########################
+# Put NAPLS ROC with ours
+#########################
+spec_NAPLS <- c(0,0.027,0.236,0.518,0.721,0.838,0.912,0.945,0.969,0.979,0.986,0.99,0.99,1)
+sens_NAPLS <- c(1,0.988,0.941,0.810,0.667,0.476,0.345,0.238,0.179,0.119,0.06,0.024,0.012,0)
+
+plot(roc_l0$specificities, roc_l0$sensitivities, xlim = c(1,0), type = "l", lwd = 2,
+     xlab = "Specificity", ylab = "Sensitivity")
+points(spec_NAPLS, sens_NAPLS, type = "l", lwd = 2, col = "red")
+# negative adjusted sens should be changed to 0
+sens_app_m_opt_fix <- sens_app_m_opt
+sens_app_m_opt_fix[sens_app_m_opt_fix < 0] <- 0
+points(spec_app_m_opt, sens_app_m_opt_fix, type = "l", lwd = 2, col = "blue")
+abline(a = 1, b = -1, lty = 2, col = "grey")
+legend("bottomright", legend = c("New Model (in sample)", "New Model (BS corrected)", "NAPLS Model (in sample)"), 
+          fill = c("black", "blue", "red"))
+          
+# trapz(spec_NAPLS, sens_NAPLS) - trapz(spec_app_m_opt, sens_app_m_opt)
+```
