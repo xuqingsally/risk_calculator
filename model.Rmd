@@ -348,7 +348,7 @@ for(k in 1:100) {
 # Fit lasso logistic model on sample; select vars; refit using glm
 ###################################################################
 set.seed(120616)
-#cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[4]])
+#cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[1]])
 cv_info_l <- cv.glmnet(x = knn_X_cont, y = Y, family = "binomial", foldid = fid_list[[4]])
 plot(cv_info_l)
 summary(cv_info_l)
