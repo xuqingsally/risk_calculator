@@ -23,4 +23,5 @@ output:
 
 ## [Psychosis Conversion Risk Calculator](https://xuqingsally.shinyapps.io/risk_calculator/)
 
-#### Reference : [A predictive model for conversion to psychosis in clinical high-risk patients](https://www.cambridge.org/core/journals/psychological-medicine/article/predictive-model-for-conversion-to-psychosis-in-clinical-highrisk-patients/C5E4C0022112C4EA619C2A8F0A826E72).
+*Reference :*  
+*Adam Ciarleglio, Gary Brucato, Michael D. Masucci, Rebecca Altschuler, Tiziano Colibazzi, Cheryl M. Corcoran, Francesca M. Crump, Guillermo Horga, Eugénie Lehembre-Shiah, Wei Leong, Scott A. Schobel, Melanie M. Wall, Lawrence H. Yang, Jeffrey A. Lieberman, Ragy R. Girgis. [A predictive model for conversion to psychosis in clinical high-risk patients](https://www.cambridge.org/core/journals/psychological-medicine/article/predictive-model-for-conversion-to-psychosis-in-clinical-highrisk-patients/C5E4C0022112C4EA619C2A8F0A826E72). Psychological Medicine, 2018 Jun 28:1-10.*
